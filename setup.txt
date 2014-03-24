@@ -1,0 +1,27 @@
+
+Setup:
+    1. Crear cuenta Gmail del equipo (sofi.xxxxxxxx@gmail.com)
+    2. Renombrar calendario principal (ver nomenclatura)
+    3. Crear calendarios en la cuenta. Usar la siguiente nomenclatura:
+        - [TIPO DE ACCION]:[ESTADO]
+            + TIPO DE ACCION:
+                - Normal
+                - Override
+            + ESTADO:
+                - On
+                - Off
+        - Ejemplo calendario:
+            + Normal:On
+    4. Eliminar 'Other Calendars' ('Hide this calendar from the view')
+    5. Copiar archivos del proyecto a RaspberryPi (todos menos carpeta '.idea')
+    6. Ejecutar sample.py y seguir instrucciones
+        - Al copiar el link a computadora asegurar estar registrado con la cuenta del equipo a configurar.
+    7. Agregar main.py a /etc/rc.local
+    8. Reiniciar RaspebrryPi
+
+Monitor/Debug:
+    1. Follow log:
+        - tail -f /home/pi/logs/ManejadorEventosG4.log
+    2. Eventos guardados en base de datos local (db name = eventosg4):
+        SELECT * FROM eventos;
+
