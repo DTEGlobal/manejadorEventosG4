@@ -12,16 +12,6 @@ import verificaRelojSistema
 import time
 
 config.logging.info("-------------Starting Threads-------------")
-# Start Adquiere Eventos Daemon
-adquiereEventosDaemon = threading.Thread(target=adquiereEventos.adquiereEventos)
-adquiereEventosDaemon.daemon = True
-adquiereEventosDaemon.start()
-time.sleep(.5)
-# Start Actua Eventos Daemon
-actuaEventosDaemon = threading.Thread(target=actuaEventos.actuaEventos)
-actuaEventosDaemon.daemon = True
-actuaEventosDaemon.start()
-time.sleep(.5)
 # Start Serial Coms Daemon
 serialDaemon = threading.Thread(target=comunicacionG4.serialDaemon)
 serialDaemon.daemon = True
@@ -31,6 +21,25 @@ time.sleep(.5)
 verificaTiempoDaemon = threading.Thread(target=verificaRelojSistema.comparaTiempos)
 verificaTiempoDaemon.daemon = True
 verificaTiempoDaemon.start()
+time.sleep(.5)
+
+config.logging.info("  ----> Wait for Clock <----  ")
+while time.mktime(time.localtime()) < 946706400:
+    # Time is less than 01/01/2000
+    config.logging.debug('Time not updated yet!')
+    time.sleep(1)
+config.logging.info("  ----> Clock updated: {0} <----  "
+                    .format((time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))))
+
+# Start Adquiere Eventos Daemon
+adquiereEventosDaemon = threading.Thread(target=adquiereEventos.adquiereEventos)
+adquiereEventosDaemon.daemon = True
+adquiereEventosDaemon.start()
+time.sleep(.5)
+# Start Actua Eventos Daemon
+actuaEventosDaemon = threading.Thread(target=actuaEventos.actuaEventos)
+actuaEventosDaemon.daemon = True
+actuaEventosDaemon.start()
 time.sleep(.5)
 config.logging.info("---------Starting Threads Done!-----------")
 
