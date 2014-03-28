@@ -75,10 +75,11 @@ def adquiereEventos():
                 # flow. The Storage object will ensure that if successful the good
                 # credentials will get written back to the file.
                 credentials = None
+                samplePath = os.path.join(os.path.dirname(__file__), 'sample.dat')
                 config.logging.info("  ----> Wait for Credentials <----  ")
                 while credentials is None:
-                    storage = file.Storage('sample.dat')
-                    credentials = storage.get()
+                    storage = file.Storage('')
+                    credentials = storage.get(samplePath)
                     time.sleep(1)
                 config.logging.info("  ----> Credentials Acquired! <----  ")
                 if credentials.invalid:
