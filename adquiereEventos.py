@@ -78,8 +78,8 @@ def adquiereEventos():
                 samplePath = os.path.join(os.path.dirname(__file__), 'sample.dat')
                 config.logging.info("  ----> Wait for Credentials <----  ")
                 while credentials is None:
-                    storage = file.Storage('')
-                    credentials = storage.get(samplePath)
+                    storage = file.Storage(samplePath)
+                    credentials = storage.get()
                     time.sleep(1)
                 config.logging.info("  ----> Credentials Acquired! <----  ")
                 if credentials.invalid:
