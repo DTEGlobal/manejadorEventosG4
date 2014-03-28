@@ -74,9 +74,14 @@ def adquiereEventos():
                 # If the credentials don't exist or are invalid run through the native client
                 # flow. The Storage object will ensure that if successful the good
                 # credentials will get written back to the file.
-                storage = file.Storage('sample.dat')
-                credentials = storage.get()
-                if credentials is None or credentials.invalid:
+                credentials = None
+                config.logging.info("  ----> Wait for Credentials <----  ")
+                while credentials is None:
+                    storage = file.Storage('sample.dat')
+                    credentials = storage.get()
+                    time.sleep(1)
+                config.logging.info("  ----> Credentials Acquired! <----  ")
+                if credentials.invalid:
                     credentials = tools.run_flow(FLOW, storage, flags)
 
                 # Create an httplib2.Http object to handle our HTTP requests and authorize it
