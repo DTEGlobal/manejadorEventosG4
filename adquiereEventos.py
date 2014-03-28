@@ -65,6 +65,7 @@ FLOW = client.flow_from_clientsecrets(CLIENT_SECRETS,
 
 
 def adquiereEventos():
+    config.logging.info("adquiereEventos: adquiereEventos Thread Running ...")
     try:
         while True:
             try:

@@ -61,7 +61,7 @@ def SendCommand(cmd_cfg):
 
 def serialDaemon():
 
-    config.logging.info("TxST: SendCommand Thread Running ...")
+    config.logging.info("comunicacionG4: SendCommand Thread Running ...")
     while True:
         SendCommand(accionCMD())
         SendCommand("01H\x0D")

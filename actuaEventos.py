@@ -28,6 +28,7 @@ def adquiereComando(estado):
 
 
 def actuaEventos():
+    config.logging.info("actuaEventos: actuaEventos Thread Running ...")
     try:
         while True:
             cursor.execute('SELECT accion, estado FROM eventos '

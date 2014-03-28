@@ -17,7 +17,8 @@ Setup:
     6. Ejecutar sample.py y seguir instrucciones
         - Al copiar el link a computadora asegurar estar registrado con la cuenta del equipo a configurar.
     7. Agregar main.py a /etc/rc.local
-    8. Reiniciar RaspebrryPi
+    8. Crear MySQL BD en RaspberryPi utilizando el modelo localizado en este proyecto en la carpeta /model.
+    9. Reiniciar RaspebrryPi
 
 Monitor/Debug:
     1. Follow log:

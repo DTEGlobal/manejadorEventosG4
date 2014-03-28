@@ -1,5 +1,9 @@
 __author__ = 'Cesar'
 
+import config
+config.logging.info("------------------START-------------------")
+
+
 import threading
 import comunicacionG4
 import actuaEventos
