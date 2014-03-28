@@ -24,9 +24,9 @@ by running:
   $ python testCalendar.py --help
 
 """
+import config
 
 import argparse
-import config
 import httplib2
 import os
 import MySQLdb

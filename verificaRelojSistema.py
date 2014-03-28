@@ -1,8 +1,10 @@
 __author__ = 'Cesar'
+
+import config
+
 import time
 import comunicacionG4
 import os
-import config
 
 def comparaTiempos():
     config.logging.info("verificaRelojSistema: comparaTiempos Thread Running ...")

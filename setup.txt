@@ -18,7 +18,11 @@ Setup:
         - Al copiar el link a computadora asegurar estar registrado con la cuenta del equipo a configurar.
     7. Agregar main.py a /etc/rc.local
     8. Crear MySQL BD en RaspberryPi utilizando el modelo localizado en este proyecto en la carpeta /model.
-    9. Reiniciar RaspebrryPi
+    9. Ajustar internacionalizacion del RaspberryPi:
+        - Ejecutar rasp-config
+        - Seleccionar:
+            + 4 Internacionalization Options > 3 Change Time Zone > Americas > Chihuahua
+    10. Reiniciar RaspebrryPi
 
 Monitor/Debug:
     1. Follow log:

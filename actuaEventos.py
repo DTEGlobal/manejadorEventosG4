@@ -1,8 +1,9 @@
 __author__ = 'Cesar'
 
+import config
+
 import time
 import MySQLdb
-import config
 
 # Construct DB object
 db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')

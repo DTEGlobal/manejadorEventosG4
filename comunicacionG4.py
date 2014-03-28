@@ -1,10 +1,11 @@
 __author__ = 'Cesar'
 
 
+import config
+
 import serial
 import time
 import actuaEventos
-import config
 
 
 
