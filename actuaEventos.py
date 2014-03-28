@@ -5,15 +5,14 @@ import config
 import time
 import MySQLdb
 
-# Construct DB object
-db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
-cursor = db.cursor(MySQLdb.cursors.DictCursor)
 
 comando = ""
 
 
 def adquiereComando(estado):
     global comando
+    # Construct DB object
+    db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
     # Traemos el Comando que toca dependiendo del estado en que se debe de encotrar el equipo
     cursor = db.cursor(MySQLdb.cursors.DictCursor)
     campodb = ""
@@ -26,12 +25,17 @@ def adquiereComando(estado):
     temp = cursor.fetchone()
     comando = temp['{0}'.format(campodb)]
     config.logging.debug ('Comando:{0}  Estado:{1}'.format(comando,estado))
+    cursor.close()
+    db.close()
 
 
 def actuaEventos():
     config.logging.info("actuaEventos: actuaEventos Thread Running ...")
     try:
         while True:
+            # Construct DB object
+            db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
+            cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute('SELECT accion, estado FROM eventos '
                            'WHERE fecha_inicio < now() and fecha_fin > now() '
                            'ORDER BY accion DESC, estado DESC')
@@ -85,10 +89,10 @@ def actuaEventos():
 
             config.logging.info('Accion:[{0}], Estado[{1}]'.format(accion, state))
             adquiereComando(state)
+            cursor.close()
+            db.close()
             time.sleep(config.delayActuaEventos)
 
     except Exception as e:
         config.logging.error('Actua Eventos - Unexpected Error! - {0}'.format(e))
-        cursor.close()
-        db.close()
 

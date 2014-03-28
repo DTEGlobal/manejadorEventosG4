@@ -160,7 +160,7 @@ def adquiereEventos():
                 config.logging.warning("The credentials have been revoked or expired, please re-run"
                                        "the application to re-authorize")
             except httplib2.ServerNotFoundError:
-                config.logging.debug("No internet access retry in {0} sec".format(config.delayAdquiereEventos))
+                config.logging.warning("No internet access retry in {0} sec".format(config.delayAdquiereEventos))
             time.sleep(config.delayAdquiereEventos)
     except Exception as e:
         config.logging.error('Adquiere Eventos - Unexpected Error! - {0}'.format(e.args))

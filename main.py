@@ -38,4 +38,4 @@ while True:
     try:
         a = 0
     except Exception as e:
-        config.logging.error("main: Unexpected exception - {}".format(e))
+        config.logging.error("main - Unexpected Error! - {}".format(e))
