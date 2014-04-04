@@ -1,12 +1,20 @@
 __author__ = 'Cesar'
 
 import config
-
+import getIP
 import time
 import MySQLdb
-
+import mosquitto
 
 comando = ""
+
+# Create Mosquitto Client for Watchdog broker
+mqttcWC = mosquitto.Mosquitto("actuaEventosWC")
+
+
+def on_connect_aeWC(mosq, obj, rc):
+    config.logging.info("actuaEventos: actuaEventos Watchdog Client connected")
+    mqttcWC.subscribe("#", 0)
 
 
 def adquiereComando(estado):
@@ -31,6 +39,10 @@ def adquiereComando(estado):
 
 def actuaEventos():
     config.logging.info("actuaEventos: actuaEventos Thread Running ...")
+    # Connect to mqtt watchdog server
+    mqttcWC.on_connect = on_connect_aeWC
+    mqttcWC.connect(getIP.localaddress, 1884)
+
     try:
         while True:
             # Construct DB object
@@ -91,7 +103,14 @@ def actuaEventos():
             adquiereComando(state)
             cursor.close()
             db.close()
-            time.sleep(config.delayActuaEventos)
+
+            t = 0
+            while t < config.delayActuaEventos:
+                time.sleep(1)
+                # mqtt client loop for watchdog keep alive
+                config.logging.debug("actuaEventos: Watchdog Keep Alive")
+                mqttcWC.loop()
+                t += 1
 
     except Exception as e:
         config.logging.error('Actua Eventos - Unexpected Error! - {0}'.format(e))

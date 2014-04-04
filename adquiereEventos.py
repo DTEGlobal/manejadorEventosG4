@@ -25,18 +25,20 @@ by running:
 
 """
 import config
-
+import getIP
 import argparse
 import httplib2
 import os
 import MySQLdb
 import time
+import mosquitto
 
 
 from apiclient import discovery
 from oauth2client import file
 from oauth2client import client
 from oauth2client import tools
+
 
 
 # Parser for command-line arguments.
@@ -63,9 +65,21 @@ FLOW = client.flow_from_clientsecrets(CLIENT_SECRETS,
                                       ],
                                       message=tools.message_if_missing(CLIENT_SECRETS))
 
+# Create Mosquitto Client for Watchdog broker
+mqttcWC = mosquitto.Mosquitto("adquiereEventosWC")
+
+
+def on_connect_aeWC(mosq, obj, rc):
+    config.logging.info("adquiereEventos: adquiereEventos Watchdog Client connected")
+    mqttcWC.subscribe("#", 0)
+
 
 def adquiereEventos():
     config.logging.info("adquiereEventos: adquiereEventos Thread Running ...")
+    # Connect to mqtt watchdog server
+    mqttcWC.on_connect = on_connect_aeWC
+    mqttcWC.connect(getIP.localaddress, 1884)
+
     try:
         while True:
             try:
@@ -163,10 +177,18 @@ def adquiereEventos():
                 cursor.close()
                 db.close()
             except client.AccessTokenRefreshError:
-                config.logging.warning("The credentials have been revoked or expired, please re-run"
-                                       "the application to re-authorize")
+                config.logging.critical("The credentials have been revoked or expired, please re-run"
+                                        "the application to re-authorize")
             except httplib2.ServerNotFoundError:
                 config.logging.warning("No internet access retry in {0} sec".format(config.delayAdquiereEventos))
-            time.sleep(config.delayAdquiereEventos)
+
+            t = 0
+            while t < config.delayAdquiereEventos:
+                time.sleep(1)
+                # mqtt client loop for watchdog keep alive
+                config.logging.debug("adquiereEventos: Watchdog Keep Alive")
+                mqttcWC.loop()
+                t += 1
+
     except Exception as e:
         config.logging.error('Adquiere Eventos - Unexpected Error! - {0}'.format(e.args))

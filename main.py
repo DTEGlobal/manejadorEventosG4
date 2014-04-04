@@ -1,8 +1,9 @@
 __author__ = 'Cesar'
 
 import config
-config.logging.info("------------------START-------------------")
-
+import getIP
+config.logging.info("------------------WAIT-------------------")
+getIP.waitForIP()
 
 import threading
 import comunicacionG4
@@ -17,12 +18,8 @@ serialDaemon = threading.Thread(target=comunicacionG4.serialDaemon)
 serialDaemon.daemon = True
 serialDaemon.start()
 time.sleep(.5)
-# Start Time Verification Daemon
-verificaTiempoDaemon = threading.Thread(target=verificaRelojSistema.comparaTiempos)
-verificaTiempoDaemon.daemon = True
-verificaTiempoDaemon.start()
-time.sleep(.5)
 
+# Wait for Clock
 config.logging.info("  ----> Wait for Clock <----  ")
 while time.mktime(time.localtime()) < 946706400:
     # Time is less than 01/01/2000
@@ -30,6 +27,13 @@ while time.mktime(time.localtime()) < 946706400:
     time.sleep(1)
 config.logging.info("  ----> Clock updated: {0} <----  "
                     .format((time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))))
+
+# Start Time Verification Daemon
+verificaTiempoDaemon = threading.Thread(target=verificaRelojSistema.comparaTiempos)
+verificaTiempoDaemon.daemon = True
+verificaTiempoDaemon.start()
+time.sleep(.5)
+
 
 # Start Adquiere Eventos Daemon
 adquiereEventosDaemon = threading.Thread(target=adquiereEventos.adquiereEventos)
