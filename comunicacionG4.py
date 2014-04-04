@@ -13,11 +13,11 @@ port = serial.Serial("/dev/ttyAMA0", baudrate=19200, timeout=1)
 tiempoEsc = ""
 
 # Create Mosquitto Client for Watchdog broker
-mqttcWC = mosquitto.Mosquitto("comparaTiemposWC")
+mqttcWC = mosquitto.Mosquitto("serialWC")
 
 
 def on_connect_cG4WC(mosq, obj, rc):
-    config.logging.info("verificaRelojSistema: comparaTiempos Watchdog Client connected")
+    config.logging.info("comunicacionG4: Serial Watchdog Client connected")
     mqttcWC.subscribe("#", 0)
 
 

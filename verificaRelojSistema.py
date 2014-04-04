@@ -24,11 +24,6 @@ def comparaTiempos():
 
     while True:
         try:
-            tiempoG4 = time.mktime(comunicacionG4.getTiempoEsc())
-            tiempoSys = time.mktime(time.localtime())
-            if tiempoSys > tiempoG4+120 or tiempoSys < tiempoG4-120:
-                os.system('date -s \'@{0}\''.format(tiempoG4))
-
             t = 0
             while t < config.actualizaReloj:
                 time.sleep(1)
@@ -36,6 +31,11 @@ def comparaTiempos():
                 config.logging.debug("verificaRelojSistema: Watchdog Keep Alive")
                 mqttcWC.loop()
                 t += 1
+
+            tiempoG4 = time.mktime(comunicacionG4.getTiempoEsc())
+            tiempoSys = time.mktime(time.localtime())
+            if tiempoSys > tiempoG4+120 or tiempoSys < tiempoG4-120:
+                os.system('date -s \'@{0}\''.format(tiempoG4))
 
         except Exception as e:
             config.logging.error('verificaRelojSistema: Error en Verificar Tiempos - {0}'.format(e))
