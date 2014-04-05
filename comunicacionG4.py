@@ -8,6 +8,7 @@ import time
 import actuaEventos
 import mosquitto
 import MySQLdb
+import bitState
 
 port = serial.Serial("/dev/ttyAMA0", baudrate=19200, timeout=1)
 
@@ -33,8 +34,29 @@ def getTiempoEsc():
     temp = time.strptime(tiempoEsc, '%H:%M:%S %d/%m/%Y')
     return temp
 
+
+def updateEstado(cmd_e):
+    estado = bitState.getBitState(cmd_e[18:20], 7)
+    config.logging.info("comunicacionG4: Estado: {0}".format(estado))
+
+    # Construct DB object
+    db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
+    cursor = db.cursor(MySQLdb.cursors.DictCursor)
+    # TODO Code for more than one device (hardcoded to 01)
+    dirDispositivo = '01'
+    # Update estado in dispositivo
+    cursor.execute("UPDATE dispositivo SET estado = \'{0}\' "
+                   'WHERE dirDispositivo = \'{1}\''.format(estado, dirDispositivo))
+    db.commit()
+    # Close DB object
+    cursor.close()
+    db.close()
+
+    resposeToConsole(cmd_e)
+
+
 def resposeToConsole(rx):
-    global servingConsole
+    config.logging.info("comunicacionG4: respuestaConsola: Rx Data->[{}]".format(rx))
 
     # Construct DB object
     db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
@@ -69,11 +91,15 @@ def SendCommand(cmd_cfg):
             # Remove last 3 chars (CR LF)
             data_toPrint = MessageFromSerial[:-2]
             if servingConsole:
-                resposeToConsole(data_toPrint)
                 servingConsole = False
-                config.logging.info("comunicacionG4: respuestaConsola: Rx Data->[{}]".format(data_toPrint))
+                if data_toPrint[2] == "E":
+                    updateEstado(data_toPrint)
+                else:
+                    resposeToConsole(data_toPrint)
             elif data_toPrint[2] == "H":
                 tiempoEsc = data_toPrint[3:]
+                config.logging.debug("comunicacionG4: RxST: Rx Data->[{}]".format(data_toPrint))
+            else:
                 config.logging.debug("comunicacionG4: RxST: Rx Data->[{}]".format(data_toPrint))
             Rx = False
 
