@@ -120,6 +120,7 @@ def adquiereEventos():
                 timeMin = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.localtime(current_date))
                 timeMax = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.localtime(current_date
                                                                              + config.secondsToStoreLocally))
+                timeCurrent = time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(current_date))
                 config.logging.debug('Dates to get: {0} - {1}'.format(timeMin, timeMax))
 
                 # Clear event table
@@ -154,11 +155,12 @@ def adquiereEventos():
                             config.logging.info("Start = [{0}], "
                                                  "End = [{1}]".format(start, end))
                             cursor.execute('INSERT into eventos '
-                                           'VALUES (NULL, \'{0}\', \'{1}\', \'{2}\', \'{3}\', \'01\')'.
+                                           'VALUES (NULL, \'{0}\', \'{1}\', \'{2}\', \'{3}\', \'01\', \'{4}\')'.
                                            format(start,
                                                   end,
                                                   accion,
-                                                  estado))
+                                                  estado,
+                                                  timeCurrent))
                             db.commit()
                         except KeyError:
                             start = current_event['start']['date']+' 00:00:00'
@@ -168,11 +170,12 @@ def adquiereEventos():
                                                  "End = [{2}]"
                                                  .format(current_event['summary'], start, end))
                             cursor.execute('INSERT into eventos '
-                                           'VALUES (NULL, \'{0}\', \'{1}\', \'{2}\', \'{3}\', \'01\')'.
+                                           'VALUES (NULL, \'{0}\', \'{1}\', \'{2}\', \'{3}\', \'01\', \'{4}\')'.
                                            format(start,
                                                   end,
                                                   accion,
-                                                  estado))
+                                                  estado,
+                                                  timeCurrent))
                             db.commit()
                 cursor.close()
                 db.close()
