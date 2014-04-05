@@ -32,7 +32,8 @@ def adquiereComando(estado):
     cursor.execute('SELECT {0} FROM dispositivo'.format(campodb))
     temp = cursor.fetchone()
     comando = temp['{0}'.format(campodb)]
-    config.logging.debug ('Comando:{0}  Estado:{1}'.format(comando,estado))
+    config.logging.debug('Comando:{0}  Estado:{1}'.format(comando,estado))
+    # Close DB object
     cursor.close()
     db.close()
 

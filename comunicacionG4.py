@@ -7,10 +7,12 @@ import serial
 import time
 import actuaEventos
 import mosquitto
+import MySQLdb
 
 port = serial.Serial("/dev/ttyAMA0", baudrate=19200, timeout=1)
 
 tiempoEsc = ""
+servingConsole = False
 
 # Create Mosquitto Client for Watchdog broker
 mqttcWC = mosquitto.Mosquitto("serialWC")
@@ -31,13 +33,28 @@ def getTiempoEsc():
     temp = time.strptime(tiempoEsc, '%H:%M:%S %d/%m/%Y')
     return temp
 
+def resposeToConsole(rx):
+    global servingConsole
 
-def accionCMD():
-    return '01{0}\x0D'.format(actuaEventos.comando)
+    # Construct DB object
+    db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
+    cursor = db.cursor(MySQLdb.cursors.DictCursor)
+    # TODO Code for more than one device (hardcoded to 01)
+    dirDispositivo = '01'
+    # Set response
+    cursor.execute('UPDATE dispositivo SET respuestaConsola = \'{0}\' '
+                   'WHERE dirDispositivo = \'{1}\''.format(rx, dirDispositivo))
+    # Clear command
+    cursor.execute('UPDATE dispositivo SET comandoConsola = \'\' '
+                   'WHERE dirDispositivo = \'{0}\''.format(dirDispositivo))
+    db.commit()
+    # Close DB object
+    cursor.close()
+    db.close()
 
 
 def SendCommand(cmd_cfg):
-    global port, tiempoEsc
+    global port, tiempoEsc, servingConsole
 
     port.flushOutput()
     command = cmd_cfg
@@ -51,9 +68,13 @@ def SendCommand(cmd_cfg):
             MessageFromSerial = port.readline()
             # Remove last 3 chars (CR LF)
             data_toPrint = MessageFromSerial[:-2]
-            if data_toPrint[2] == "H":
+            if servingConsole:
+                resposeToConsole(data_toPrint)
+                servingConsole = False
+                config.logging.info("comunicacionG4: respuestaConsola: Rx Data->[{}]".format(data_toPrint))
+            elif data_toPrint[2] == "H":
                 tiempoEsc = data_toPrint[3:]
-            config.logging.debug("comunicacionG4: RxST: Rx Data->[{}]".format(data_toPrint))
+                config.logging.debug("comunicacionG4: RxST: Rx Data->[{}]".format(data_toPrint))
             Rx = False
 
         except serial.SerialException as e:
@@ -65,14 +86,31 @@ def SendCommand(cmd_cfg):
 
 
 def serialDaemon():
+    global servingConsole
+
     config.logging.info("comunicacionG4: SendCommand Thread Running ...")
     # Connect to mqtt watchdog server
     mqttcWC.on_connect = on_connect_cG4WC
     mqttcWC.connect(getIP.localaddress, 1884)
 
     while True:
-        SendCommand(accionCMD())
-        SendCommand("01H\x0D")
+        # Construct DB object
+        db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+        # TODO Code for more than one device (hardcoded to 01)
+        cursor.execute('SELECT comandoConsola FROM dispositivo')
+        comandoConsola = cursor.fetchall()
+        if comandoConsola[0]['comandoConsola'] != '':
+            servingConsole = True
+            config.logging.info("comunicacionG4: Comando Consola = {0}".format(comandoConsola[0]['comandoConsola']))
+            SendCommand('01{0}\x0D'.format(comandoConsola[0]['comandoConsola']))
+        else:
+            SendCommand('01{0}\x0D'.format(actuaEventos.comando))
+        SendCommand('01H\x0D')
+
+        # Close DB object
+        cursor.close()
+        db.close()
 
         t = 0
         while t < config.delaySerial:
