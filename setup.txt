@@ -17,16 +17,22 @@ Setup:
     6. Ejecutar sample.py y seguir instrucciones
         - Al copiar el link a computadora asegurar estar registrado con la cuenta del equipo a configurar.
     7. Agregar main.py a /etc/rc.local
-    8. Crear MySQL BD en RaspberryPi utilizando el modelo localizado en este proyecto en la carpeta /model.
-    9. Ajustar internacionalizacion del RaspberryPi:
+    8. Instalar mosquitto MQTT broker
+    9. Configurar mosquitto MQTT broker para el puerto 1884
+    10. Agregar Killer.py a /etc/rc.local
+    11. Configurar watchdog/config.py para 5 clientes (4 threads + killer)
+    11. Crear MySQL BD en RaspberryPi utilizando el modelo localizado en este proyecto en la carpeta /model.
+    12. Ajustar internacionalizacion del RaspberryPi:
         - Ejecutar rasp-config
         - Seleccionar:
             + 4 Internacionalization Options > 3 Change Time Zone > Americas > Chihuahua
-    10. Reiniciar RaspebrryPi
+    13. Reiniciar RaspebrryPi
 
 Monitor/Debug:
-    1. Follow log:
-        - tail -f /home/pi/logs/ManejadorEventosG4.log
-    2. Eventos guardados en base de datos local (db name = eventosg4):
+    1. Follow ManejadorEventos log:
+        - tail -f /home/logs/ManejadorEventosG4.log
+    2. Follow Watchdog log:
+        - tail -f /home/pi/logs/watchdog.log
+    3. Eventos guardados en base de datos local (db name = eventosg4):
         SELECT * FROM eventos;
 
