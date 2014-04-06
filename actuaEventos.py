@@ -32,7 +32,7 @@ def adquiereComando(estado):
     cursor.execute('SELECT {0} FROM dispositivo'.format(campodb))
     temp = cursor.fetchone()
     comando = temp['{0}'.format(campodb)]
-    config.logging.debug('Comando:{0}  Estado:{1}'.format(comando,estado))
+    config.logging.debug('actuaEventos: Comando:{0}  Estado:{1}'.format(comando,estado))
     # Close DB object
     cursor.close()
     db.close()
@@ -55,11 +55,12 @@ def actuaEventos():
             db.commit()
             queryResponse = cursor.fetchall()
 
-            state = 'Off'
+            # Requirement: Activate output if no events found (by EC)
+            state = 'On'
             accion = 'Normal'
             config.logging.debug(queryResponse)
             if len(queryResponse) > 1:
-                config.logging.debug('Eventos empalmados')
+                config.logging.debug('actuaEventos: Eventos empalmados')
                 for row in queryResponse:
                     if row['accion'] == 'Override':
                         accion = 'Override'
@@ -88,7 +89,7 @@ def actuaEventos():
 
             elif len(queryResponse) == 1:
                 accion = queryResponse[0]['accion']
-                config.logging.debug('Un solo evento')
+                config.logging.debug('actuaEventos: Un solo evento')
                 if queryResponse[0]['estado'] == 'On':
                     state = 'On'
                 elif queryResponse[0]['estado'] == 'Off':
@@ -98,9 +99,9 @@ def actuaEventos():
                     state = 'Error'
 
             else:
-                config.logging.debug('No hay eventos programados para la hora actual')
+                config.logging.debug('actuaEventos: No hay eventos programados para la hora actual')
 
-            config.logging.info('Accion:[{0}], Estado[{1}]'.format(accion, state))
+            config.logging.info('actuaEventos: Accion:[{0}], Estado[{1}]'.format(accion, state))
             adquiereComando(state)
             cursor.close()
             db.close()
@@ -114,5 +115,5 @@ def actuaEventos():
                 t += 1
 
     except Exception as e:
-        config.logging.error('Actua Eventos - Unexpected Error! - {0}'.format(e))
+        config.logging.error('actuaEventos: Unexpected Error! - {0}'.format(e))
 
