@@ -26,7 +26,8 @@ Setup:
         - Ejecutar rasp-config
         - Seleccionar:
             + 4 Internacionalization Options > 3 Change Time Zone > Americas > Chihuahua
-    13. Reiniciar RaspebrryPi
+    13. Copiar archivos de /webServer a /var/www
+    14. Reiniciar RaspebrryPi
 
 Monitor/Debug:
     1. Follow ManejadorEventos log:
