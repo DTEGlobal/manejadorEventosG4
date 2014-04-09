@@ -13,6 +13,8 @@ import verificaRelojSistema
 import time
 
 config.logging.info("-------------Starting Threads-------------")
+lock = threading.Lock()
+
 # Start Serial Coms Daemon
 serialDaemon = threading.Thread(target=comunicacionG4.serialDaemon)
 serialDaemon.daemon = True

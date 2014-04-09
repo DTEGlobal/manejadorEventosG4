@@ -39,6 +39,7 @@ from oauth2client import file
 from oauth2client import client
 from oauth2client import tools
 
+from main import lock
 
 
 # Parser for command-line arguments.
@@ -107,78 +108,79 @@ def adquiereEventos():
                 # Construct the service object for the interacting with the Calendar API.
                 service = discovery.build('calendar', 'v3', http=http)
 
-                # Construct DB object
-                db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
-                cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                with lock:
+                    # Construct DB object
+                    db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
+                    cursor = db.cursor(MySQLdb.cursors.DictCursor)
 
-                # Primary calendar id includes the device name (ei. sofi.compresor1@gmail.com)
-                deviceName = service.calendarList().get(calendarId='primary').execute()['id']
-                calendar_list = service.calendarList().list().execute()
+                    # Primary calendar id includes the device name (ei. sofi.compresor1@gmail.com)
+                    deviceName = service.calendarList().get(calendarId='primary').execute()['id']
+                    calendar_list = service.calendarList().list().execute()
 
-                # Get current date and configuration to calculate dates to pull from calendar
-                current_date = time.mktime(time.localtime())
-                timeMin = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.localtime(current_date))
-                timeMax = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.localtime(current_date
-                                                                             + config.secondsToStoreLocally))
-                timeCurrent = time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(current_date))
-                config.logging.debug('Dates to get: {0} - {1}'.format(timeMin, timeMax))
+                    # Get current date and configuration to calculate dates to pull from calendar
+                    current_date = time.mktime(time.localtime())
+                    timeMin = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.localtime(current_date))
+                    timeMax = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.localtime(current_date
+                                                                                 + config.secondsToStoreLocally))
+                    timeCurrent = time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(current_date))
+                    config.logging.debug('Dates to get: {0} - {1}'.format(timeMin, timeMax))
 
-                # Clear event table
-                cursor.execute('DELETE from eventos WHERE idEventos > 0')
-                for calendar in calendar_list['items']:
-                    accion, estado = calendar['summary'].split(':')
-                    config.logging.info("Device name = [{0}], "
-                                         "Accion = [{1}], "
-                                         "Estado = [{2}]".format(deviceName, accion, estado))
-                    cursor.execute('SELECT * FROM dispositivo')
-                    currentName = cursor.fetchone()
-                    if currentName['nombre'] != deviceName:
-                        config.logging.debug('si necesitamos cambio de nombre!')
-                        cursor.execute('UPDATE dispositivo SET nombre = \'{0}\''.format(deviceName))
-                        db.commit()
-
-                    current_month_events = service.events().list(calendarId=calendar['id'],
-                                                                 singleEvents=True,
-                                                                 timeMax=timeMax,
-                                                                 timeMin=timeMin).execute()
-                    for current_event in current_month_events['items']:
-                        try:
-                            s = current_event['start']['dateTime']
-                            date, t = s.split('T')
-                            t, q = t.split('-')
-                            start = '{0} {1}'.format(date, t)
-
-                            e = current_event['end']['dateTime']
-                            date, t = e.split('T')
-                            t, q = t.split('-')
-                            end = '{0} {1}'.format(date, t)
-                            config.logging.info("Start = [{0}], "
-                                                 "End = [{1}]".format(start, end))
-                            cursor.execute('INSERT into eventos '
-                                           'VALUES (NULL, \'{0}\', \'{1}\', \'{2}\', \'{3}\', \'01\', \'{4}\')'.
-                                           format(start,
-                                                  end,
-                                                  accion,
-                                                  estado,
-                                                  timeCurrent))
+                    # Clear event table
+                    cursor.execute('DELETE from eventos WHERE idEventos > 0')
+                    for calendar in calendar_list['items']:
+                        accion, estado = calendar['summary'].split(':')
+                        config.logging.info("Device name = [{0}], "
+                                             "Accion = [{1}], "
+                                             "Estado = [{2}]".format(deviceName, accion, estado))
+                        cursor.execute('SELECT * FROM dispositivo')
+                        currentName = cursor.fetchone()
+                        if currentName['nombre'] != deviceName:
+                            config.logging.debug('si necesitamos cambio de nombre!')
+                            cursor.execute('UPDATE dispositivo SET nombre = \'{0}\''.format(deviceName))
                             db.commit()
-                        except KeyError:
-                            start = current_event['start']['date']+' 00:00:00'
-                            end = current_event['end']['date']+' 23:59:59'
-                            config.logging.debug("(All Day Event)"
-                                                 "Start = [{1}]"
-                                                 "End = [{2}]"
-                                                 .format(current_event['summary'], start, end))
-                            cursor.execute('INSERT into eventos '
-                                           'VALUES (NULL, \'{0}\', \'{1}\', \'{2}\', \'{3}\', \'01\', \'{4}\')'.
-                                           format(start,
-                                                  end,
-                                                  accion,
-                                                  estado,
-                                                  timeCurrent))
-                            db.commit()
-                cursor.close()
-                db.close()
+
+                        current_month_events = service.events().list(calendarId=calendar['id'],
+                                                                     singleEvents=True,
+                                                                     timeMax=timeMax,
+                                                                     timeMin=timeMin).execute()
+                        for current_event in current_month_events['items']:
+                            try:
+                                s = current_event['start']['dateTime']
+                                date, t = s.split('T')
+                                t, q = t.split('-')
+                                start = '{0} {1}'.format(date, t)
+
+                                e = current_event['end']['dateTime']
+                                date, t = e.split('T')
+                                t, q = t.split('-')
+                                end = '{0} {1}'.format(date, t)
+                                config.logging.info("Start = [{0}], "
+                                                     "End = [{1}]".format(start, end))
+                                cursor.execute('INSERT into eventos '
+                                               'VALUES (NULL, \'{0}\', \'{1}\', \'{2}\', \'{3}\', \'01\', \'{4}\')'.
+                                               format(start,
+                                                      end,
+                                                      accion,
+                                                      estado,
+                                                      timeCurrent))
+                                db.commit()
+                            except KeyError:
+                                start = current_event['start']['date']+' 00:00:00'
+                                end = current_event['end']['date']+' 23:59:59'
+                                config.logging.debug("(All Day Event)"
+                                                     "Start = [{1}]"
+                                                     "End = [{2}]"
+                                                     .format(current_event['summary'], start, end))
+                                cursor.execute('INSERT into eventos '
+                                               'VALUES (NULL, \'{0}\', \'{1}\', \'{2}\', \'{3}\', \'01\', \'{4}\')'.
+                                               format(start,
+                                                      end,
+                                                      accion,
+                                                      estado,
+                                                      timeCurrent))
+                                db.commit()
+                    cursor.close()
+                    db.close()
             except client.AccessTokenRefreshError:
                 config.logging.critical("The credentials have been revoked or expired, please re-run"
                                         "the application to re-authorize")

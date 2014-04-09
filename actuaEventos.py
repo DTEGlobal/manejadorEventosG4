@@ -6,6 +6,8 @@ import time
 import MySQLdb
 import mosquitto
 
+from main import lock
+
 comando = ""
 
 # Create Mosquitto Client for Watchdog broker
@@ -46,14 +48,17 @@ def actuaEventos():
 
     try:
         while True:
-            # Construct DB object
-            db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
-            cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute('SELECT accion, estado FROM eventos '
-                           'WHERE fecha_inicio < now() and fecha_fin > now() '
-                           'ORDER BY accion DESC, estado DESC')
-            db.commit()
-            queryResponse = cursor.fetchall()
+            with lock:
+                # Construct DB object
+                db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
+                cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                cursor.execute('SELECT accion, estado FROM eventos '
+                               'WHERE fecha_inicio < now() and fecha_fin > now() '
+                               'ORDER BY accion DESC, estado DESC')
+                db.commit()
+                queryResponse = cursor.fetchall()
+                cursor.close()
+                db.close()
 
             # Requirement: Activate output if no events found (by EC)
             state = 'On'
@@ -103,8 +108,6 @@ def actuaEventos():
 
             config.logging.info('actuaEventos: Accion:[{0}], Estado[{1}]'.format(accion, state))
             adquiereComando(state)
-            cursor.close()
-            db.close()
 
             t = 0
             while t < config.delayActuaEventos:
