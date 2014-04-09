@@ -140,8 +140,8 @@ def serialDaemon():
 
         t = 0
         while t < config.delaySerial:
-            time.sleep(1)
             # mqtt client loop for watchdog keep alive
             config.logging.debug("verificaRelojSistema: Watchdog Keep Alive")
+            # mqtt loop takes 1 sec to execute
             mqttcWC.loop()
             t += 1

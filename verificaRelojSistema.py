@@ -26,9 +26,9 @@ def comparaTiempos():
         try:
             t = 0
             while t < config.actualizaReloj:
-                time.sleep(1)
                 # mqtt client loop for watchdog keep alive
                 config.logging.debug("verificaRelojSistema: Watchdog Keep Alive")
+                # mqtt loop takes 1 sec to execute
                 mqttcWC.loop()
                 t += 1
 
