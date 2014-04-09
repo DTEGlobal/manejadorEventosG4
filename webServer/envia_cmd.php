@@ -10,7 +10,7 @@
 <body>
 <?php
   
-  $con=mysql_connect("lcalhost","admin","petrolog");
+  $con=mysql_connect("localhost","admin","petrolog");
   $db =Mysql_select_db("eventosg4",$con);
   
   

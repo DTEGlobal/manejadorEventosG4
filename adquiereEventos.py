@@ -128,14 +128,13 @@ def adquiereEventos():
                     for calendar in calendar_list['items']:
                         accion, estado = calendar['summary'].split(':')
                         config.logging.info("Device name = [{0}], "
-                                             "Accion = [{1}], "
-                                             "Estado = [{2}]".format(deviceName, accion, estado))
+                                            "Accion = [{1}], "
+                                            "Estado = [{2}]".format(deviceName, accion, estado))
                         cursor.execute('SELECT * FROM dispositivo')
                         currentName = cursor.fetchone()
                         if currentName['nombre'] != deviceName:
                             config.logging.debug('si necesitamos cambio de nombre!')
                             cursor.execute('UPDATE dispositivo SET nombre = \'{0}\''.format(deviceName))
-                            db.commit()
 
                         current_month_events = service.events().list(calendarId=calendar['id'],
                                                                      singleEvents=True,
@@ -153,7 +152,7 @@ def adquiereEventos():
                                 t, q = t.split('-')
                                 end = '{0} {1}'.format(date, t)
                                 config.logging.info("Start = [{0}], "
-                                                     "End = [{1}]".format(start, end))
+                                                    "End = [{1}]".format(start, end))
                                 cursor.execute('INSERT into eventos '
                                                'VALUES (NULL, \'{0}\', \'{1}\', \'{2}\', \'{3}\', \'01\', \'{4}\')'.
                                                format(start,
@@ -161,7 +160,6 @@ def adquiereEventos():
                                                       accion,
                                                       estado,
                                                       timeCurrent))
-                                db.commit()
                             except KeyError:
                                 start = current_event['start']['date']+' 00:00:00'
                                 end = current_event['end']['date']+' 23:59:59'
@@ -176,7 +174,7 @@ def adquiereEventos():
                                                       accion,
                                                       estado,
                                                       timeCurrent))
-                                db.commit()
+                    db.commit()
                     cursor.close()
                     db.close()
             except client.AccessTokenRefreshError:
