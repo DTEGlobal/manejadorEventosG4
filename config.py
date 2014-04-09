@@ -2,6 +2,7 @@ __author__ = 'Cesar'
 
 
 import logging
+import threading
 
 # Logging
 logging.basicConfig(format='%(asctime)s - [%(levelname)s]: %(message)s',
@@ -19,3 +20,6 @@ secondsToStoreLocally = daysToStoreLocally * 86400
 
 # Time interval between clock verification
 actualizaReloj = 600
+
+# Thread lock
+lock = threading.Lock()

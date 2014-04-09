@@ -2,11 +2,8 @@ __author__ = 'Cesar'
 
 import config
 import getIP
-import time
 import MySQLdb
 import mosquitto
-
-from main import lock
 
 comando = ""
 
@@ -48,7 +45,7 @@ def actuaEventos():
 
     try:
         while True:
-            with lock:
+            with config.lock:
                 # Construct DB object
                 db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
                 cursor = db.cursor(MySQLdb.cursors.DictCursor)

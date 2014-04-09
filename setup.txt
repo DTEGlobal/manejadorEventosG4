@@ -17,23 +17,34 @@ Setup:
     6. Ejecutar sample.py y seguir instrucciones
         - Al copiar el link a computadora asegurar estar registrado con la cuenta del equipo a configurar.
     7. Agregar main.py a /etc/rc.local
-    8. Instalar mosquitto MQTT broker
+    8. Instalar mosquitto MQTT broker:
+        - apt-get install mosquitto
     9. Configurar mosquitto MQTT broker para el puerto 1884
-    10. Agregar Killer.py a /etc/rc.local
-    11. Configurar watchdog/config.py para 5 clientes (4 threads + killer)
-    11. Crear MySQL BD en RaspberryPi utilizando el modelo localizado en este proyecto en la carpeta /model.
-    12. Ajustar internacionalizacion del RaspberryPi:
+    10. Instalar watchdog module:
+        - modprobe bcm2708_wdog
+        - nano /etc/modules (add line “bcm2708_wdog”)
+    11. Agregar Killer.py a /etc/rc.local
+    12. Configurar watchdog/config.py para 5 clientes (4 threads + killer)
+    13. Crear MySQL BD en RaspberryPi utilizando el modelo localizado en este proyecto en la carpeta /model.
+    14. Agregar dispositivo en tabla dispositivos de BD con comandos de encendido y de apagado.
+    15. Ajustar internacionalizacion del RaspberryPi:
         - Ejecutar rasp-config
         - Seleccionar:
             + 4 Internacionalization Options > 3 Change Time Zone > Americas > Chihuahua
-    13. Copiar archivos de /webServer a /var/www
-    14. Reiniciar RaspebrryPi
+    16. Copiar archivos de /webServer a /var/www
+    17. Detener servicio ntpd:
+        - service ntp stop
+    18. Desactivar servicio ntpd:
+        - update-rc.d -f ntp remove
+    19. Instalar ntpdate:
+        - apt-get install ntpdate
+    20. Reiniciar RaspebrryPi
 
 Monitor/Debug:
     1. Follow ManejadorEventos log:
         - tail -f /home/logs/ManejadorEventosG4.log
     2. Follow Watchdog log:
-        - tail -f /home/pi/logs/watchdog.log
+        - tail -f /home/logs/watchdog.log
     3. Eventos guardados en base de datos local (db name = eventosg4):
         SELECT * FROM eventos;
 

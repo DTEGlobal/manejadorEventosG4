@@ -33,13 +33,11 @@ import MySQLdb
 import time
 import mosquitto
 
-
 from apiclient import discovery
 from oauth2client import file
 from oauth2client import client
 from oauth2client import tools
 
-from main import lock
 
 
 # Parser for command-line arguments.
@@ -108,7 +106,7 @@ def adquiereEventos():
                 # Construct the service object for the interacting with the Calendar API.
                 service = discovery.build('calendar', 'v3', http=http)
 
-                with lock:
+                with config.lock:
                     # Construct DB object
                     db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
                     cursor = db.cursor(MySQLdb.cursors.DictCursor)
