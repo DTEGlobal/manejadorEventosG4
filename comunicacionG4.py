@@ -141,6 +141,10 @@ def SendCommand(cmd_cfg):
 
         except serial.SerialException as e:
             config.logging.error("comunicacionG4: Error - {0}".format(e))
+            if servingConsole:
+                servingConsole = False
+                resposeToConsole('Error - {0}'.format(e))
+
             Rx = False
         except IndexError as i:
             config.logging.error("comunicacionG4: Error - {0}".format(i))
