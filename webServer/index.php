@@ -59,7 +59,7 @@
  
  
  //Resultado de la configuracion Actual
- $resultConf = mysql_query("SELECT * FROM eventos");
+ $resultConf = mysql_query("SELECT * FROM eventos ORDER BY fecha_inicio");
   echo "<h3>";
   echo "<table border='1' align='center'>
   <tr>
