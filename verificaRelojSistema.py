@@ -24,6 +24,35 @@ def comparaTiempos():
 
     while True:
         try:
+            while not comunicacionG4.tiempoEscDisponible():
+                tiempoG4 = time.mktime(comunicacionG4.getTiempoEsc())
+                config.logging.debug("verificaRelojSistema: tiempoEsc -> [{0}]"
+                                     .format(time.strftime('%H:%M:%S %d/%m/%Y', comunicacionG4.getTiempoEsc())))
+                tiempoSys = time.mktime(time.localtime())
+                config.logging.debug("verificaRelojSistema: tiempoSys -> [{0}]"
+                                     .format(time.strftime('%H:%M:%S %d/%m/%Y', time.localtime())))
+                # mqtt client loop for watchdog keep alive
+                config.logging.info("verificaRelojSistema: Watchdog Keep Alive - Esperando TiempoEsc")
+                # mqtt loop takes 1 sec to execute
+                mqttcWC.loop()
+
+            config.logging.info("verificaRelojSistema: TiempoEsc Disponible!")
+
+            r = os.system('ntpdate {0}'.format(config.ntpserver))
+            if r == 0:
+                config.logging.info("verificaRelojSistema: ntpdate command successful, time updated")
+                if not comunicacionG4.tiempoEscValido():
+                    config.logging.warning("verificaRelojSistema: Reloj ESC invalido - Corrigiendo")
+                    comunicacionG4.setTiempoEsc()
+                elif tiempoSys > tiempoG4+120 or tiempoSys < tiempoG4-120:
+                    config.logging.info("verificaRelojSistema: Reloj ESC valido, tiempo incorrecto - Corrigiendo")
+                    comunicacionG4.setTiempoEsc()
+            else:
+                config.logging.info("verificaRelojSistema: ntpdate command failed, time uncertain")
+                if tiempoSys > tiempoG4+120 or tiempoSys < tiempoG4-120:
+                    config.logging.warning("verificaRelojSistema: Corrigiendo reloj RaspberryPi")
+                    os.system('date -s \'@{0}\''.format(tiempoG4))
+
             t = 0
             while t < config.actualizaReloj:
                 # mqtt client loop for watchdog keep alive
@@ -32,12 +61,5 @@ def comparaTiempos():
                 mqttcWC.loop()
                 t += 1
 
-            tiempoG4 = time.mktime(comunicacionG4.getTiempoEsc())
-            tiempoSys = time.mktime(time.localtime())
-            if tiempoSys > tiempoG4+120 or tiempoSys < tiempoG4-120:
-                os.system('date -s \'@{0}\''.format(tiempoG4))
-
         except Exception as e:
             config.logging.error('verificaRelojSistema: Error en Verificar Tiempos - {0}'.format(e))
-
-

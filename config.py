@@ -21,5 +21,8 @@ secondsToStoreLocally = daysToStoreLocally * 86400
 # Time interval between clock verification
 actualizaReloj = 600
 
+# NTP Server
+ntpserver = 'pool.ntp.org'
+
 # Thread lock
 lock = threading.Lock()

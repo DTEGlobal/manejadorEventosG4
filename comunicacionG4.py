@@ -9,11 +9,13 @@ import actuaEventos
 import mosquitto
 import MySQLdb
 import bitState
+import re
 
 port = serial.Serial("/dev/ttyAMA0", baudrate=19200, timeout=1)
 
 tiempoEsc = ""
 servingConsole = False
+updateTime = ""
 
 # Create Mosquitto Client for Watchdog broker
 mqttcWC = mosquitto.Mosquitto("serialWC")
@@ -24,15 +26,46 @@ def on_connect_cG4WC(mosq, obj, rc):
     mqttcWC.subscribe("#", 0)
 
 
+def tiempoEscValido():
+    """
+    Returns True if the time acquired by H command has a valid date:
+    HH:MM:SS dd:mm:yy
+    with no hex numbers. False otherwise
+    """
+    if re.search('\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{2}', tiempoEsc):
+        return True
+    else:
+        return False
+
+
+def tiempoEscDisponible():
+    """
+    Returns True if the time has been acquired by H command. False otherwise
+    """
+    if tiempoEsc == "":
+        return False
+    else:
+        return True
+
+
 def getTiempoEsc():
+    """
+    Returns the time acquired by H command. Do not use without first making sure the time is available
+    by using tiempoEscDisponible.
+    """
     global tiempoEsc
 
-    a = tiempoEsc[-2:]
-    tiempoEsc = tiempoEsc[:-2]
-    tiempoEsc = "{0}20{1}".format(tiempoEsc, a)
+    if tiempoEscDisponible():
+        return time.strptime(tiempoEsc, '%H:%M:%S %d/%m/%y')
+    else:
+        # Return invalid time (Time is less than 01/01/2000) see main.py
+        return time.localtime(0)
 
-    temp = time.strptime(tiempoEsc, '%H:%M:%S %d/%m/%Y')
-    return temp
+
+def setTiempoEsc():
+    global updateTime
+
+    updateTime = time.strftime('%H:%M:%S %d/%m/%y ', time.localtime())
 
 
 def updateEstado(cmd_e):
@@ -82,7 +115,7 @@ def SendCommand(cmd_cfg):
     command = cmd_cfg
     Rx = True
     data_toPrint = command[:-1]
-    config.logging.debug("comunicacionG4: TxST: Tx Data->[{}]".format(data_toPrint))
+    config.logging.debug("comunicacionG4: Tx Data->[{}]".format(data_toPrint))
     port.write(command)
 
     while Rx:
@@ -98,9 +131,12 @@ def SendCommand(cmd_cfg):
                     resposeToConsole(data_toPrint)
             elif data_toPrint[2] == "H":
                 tiempoEsc = data_toPrint[3:]
-                config.logging.debug("comunicacionG4: RxST: Rx Data->[{}]".format(data_toPrint))
+                config.logging.debug("comunicacionG4: Reloj ESC -> [{}]".format(data_toPrint))
+            elif data_toPrint[2] == "S":
+                config.logging.info("comunicacionG4: Nuevo Reloj ESC -> [{}]".format(data_toPrint))
+
             else:
-                config.logging.debug("comunicacionG4: RxST: Rx Data->[{}]".format(data_toPrint))
+                config.logging.debug("comunicacionG4: Rx Data- > [{}]".format(data_toPrint))
             Rx = False
 
         except serial.SerialException as e:
@@ -112,7 +148,7 @@ def SendCommand(cmd_cfg):
 
 
 def serialDaemon():
-    global servingConsole
+    global servingConsole, updateTime
 
     config.logging.info("comunicacionG4: SendCommand Thread Running ...")
     # Connect to mqtt watchdog server
@@ -130,6 +166,10 @@ def serialDaemon():
             servingConsole = True
             config.logging.info("comunicacionG4: Comando Consola = {0}".format(comandoConsola[0]['comandoConsola']))
             SendCommand('01{0}\x0D'.format(comandoConsola[0]['comandoConsola']))
+        elif updateTime != '':
+            config.logging.info("comunicacionG4: Corrigiendo Reloj ESC")
+            SendCommand('01SH{0}\x0D'.format(updateTime))
+            updateTime = ''
         else:
             SendCommand('01{0}\x0D'.format(actuaEventos.comando))
         SendCommand('01H\x0D')

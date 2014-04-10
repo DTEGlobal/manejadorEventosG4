@@ -6,11 +6,12 @@ config.logging.info("------------------WAIT-------------------")
 getIP.waitForIP()
 
 import threading
+import time
+
 import comunicacionG4
+import verificaRelojSistema
 import actuaEventos
 import adquiereEventos
-import verificaRelojSistema
-import time
 
 config.logging.info("-------------Starting Threads-------------")
 lock = threading.Lock()
@@ -31,10 +32,10 @@ time.sleep(.5)
 config.logging.info("  ----> Wait for Clock <----  ")
 while time.mktime(time.localtime()) < 946706400:
     # Time is less than 01/01/2000
-    config.logging.debug('Time not updated yet!')
+    config.logging.debug('main: Time not updated yet!')
     time.sleep(1)
 config.logging.info("  ----> Clock updated: {0} <----  "
-                    .format((time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))))
+                    .format((time.strftime("%H:%M:%S %d/%m/%Y", time.localtime()))))
 
 # Start Adquiere Eventos Daemon
 adquiereEventosDaemon = threading.Thread(target=adquiereEventos.adquiereEventos)
@@ -52,4 +53,4 @@ while True:
     try:
         a = 0
     except Exception as e:
-        config.logging.error("main - Unexpected Error! - {}".format(e))
+        config.logging.error("main: Unexpected Error! - {}".format(e))
