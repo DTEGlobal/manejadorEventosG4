@@ -2,7 +2,6 @@ __author__ = 'Cesar'
 
 
 import config
-import getIP
 import serial
 import time
 import actuaEventos
@@ -73,7 +72,7 @@ def updateEstado(cmd_e):
     config.logging.info("comunicacionG4: Estado: {0}".format(estado))
 
     # Construct DB object
-    db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
+    db = MySQLdb.connect(host='localhost', user='root', passwd='petrolog', db='eventosg4')
     cursor = db.cursor(MySQLdb.cursors.DictCursor)
     # TODO Code for more than one device (hardcoded to 01)
     dirDispositivo = '01'
@@ -92,7 +91,7 @@ def resposeToConsole(rx):
     config.logging.info("comunicacionG4: respuestaConsola: Rx Data->[{}]".format(rx))
 
     # Construct DB object
-    db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
+    db = MySQLdb.connect(host='localhost', user='root', passwd='petrolog', db='eventosg4')
     cursor = db.cursor(MySQLdb.cursors.DictCursor)
     # TODO Code for more than one device (hardcoded to 01)
     dirDispositivo = '01'
@@ -124,11 +123,11 @@ def SendCommand(cmd_cfg):
             # Remove last 3 chars (CR LF)
             data_toPrint = MessageFromSerial[:-2]
             if servingConsole:
-                servingConsole = False
                 if data_toPrint[2] == "E":
                     updateEstado(data_toPrint)
                 else:
                     resposeToConsole(data_toPrint)
+                servingConsole = False
             elif data_toPrint[2] == "H":
                 tiempoEsc = data_toPrint[3:]
                 config.logging.debug("comunicacionG4: Reloj ESC -> [{}]".format(data_toPrint))
@@ -143,11 +142,13 @@ def SendCommand(cmd_cfg):
             config.logging.error("comunicacionG4: Error - {0}".format(e))
             if servingConsole:
                 servingConsole = False
-                resposeToConsole('Error - {0}'.format(e))
-
+                resposeToConsole('   Error - {0}'.format(e))
             Rx = False
         except IndexError as i:
             config.logging.error("comunicacionG4: Error - {0}".format(i))
+            if servingConsole:
+                servingConsole = False
+                resposeToConsole('   Error - {0}'.format(i))
             Rx = False
 
 
@@ -157,35 +158,39 @@ def serialDaemon():
     config.logging.info("comunicacionG4: SendCommand Thread Running ...")
     # Connect to mqtt watchdog server
     mqttcWC.on_connect = on_connect_cG4WC
-    mqttcWC.connect(getIP.localaddress, 1884)
+    mqttcWC.connect('localhost', 1884)
 
     while True:
-        # Construct DB object
-        db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
-        cursor = db.cursor(MySQLdb.cursors.DictCursor)
-        # TODO Code for more than one device (hardcoded to 01)
-        cursor.execute('SELECT comandoConsola FROM dispositivo')
-        comandoConsola = cursor.fetchall()
-        if comandoConsola[0]['comandoConsola'] != '':
-            servingConsole = True
-            config.logging.info("comunicacionG4: Comando Consola = {0}".format(comandoConsola[0]['comandoConsola']))
-            SendCommand('01{0}\x0D'.format(comandoConsola[0]['comandoConsola']))
-        elif updateTime != '':
-            config.logging.info("comunicacionG4: Corrigiendo Reloj ESC")
-            SendCommand('01SH{0}\x0D'.format(updateTime))
-            updateTime = ''
-        else:
-            SendCommand('01{0}\x0D'.format(actuaEventos.comando))
-        SendCommand('01H\x0D')
+        try:
+            # Construct DB object
+            db = MySQLdb.connect(host='localhost', user='root', passwd='petrolog', db='eventosg4')
+            cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            # TODO Code for more than one device (hardcoded to 01)
+            cursor.execute('SELECT comandoConsola FROM dispositivo')
+            comandoConsola = cursor.fetchall()
+            if comandoConsola[0]['comandoConsola'] != '':
+                servingConsole = True
+                config.logging.info("comunicacionG4: Comando Consola = {0}".format(comandoConsola[0]['comandoConsola']))
+                SendCommand('01{0}\x0D'.format(comandoConsola[0]['comandoConsola']))
+            elif updateTime != '':
+                config.logging.info("comunicacionG4: Corrigiendo Reloj ESC")
+                SendCommand('01SH{0}\x0D'.format(updateTime))
+                updateTime = ''
+            else:
+                SendCommand('01{0}\x0D'.format(actuaEventos.comando))
+            SendCommand('01H\x0D')
 
-        # Close DB object
-        cursor.close()
-        db.close()
+            # Close DB object
+            cursor.close()
+            db.close()
 
-        t = 0
-        while t < config.delaySerial:
-            # mqtt client loop for watchdog keep alive
-            config.logging.debug("verificaRelojSistema: Watchdog Keep Alive")
-            # mqtt loop takes 1 sec to execute
-            mqttcWC.loop()
-            t += 1
+            t = 0
+            while t < config.delaySerial:
+                # mqtt client loop for watchdog keep alive
+                config.logging.debug("comunicacionG4: Watchdog Keep Alive")
+                # mqtt loop takes 1 sec to execute
+                mqttcWC.loop()
+                t += 1
+        except Exception as e:
+            config.logging.error('comunicacionG4: Unexpected Error! - {0}'.format(e.args))
+            time.sleep(1)

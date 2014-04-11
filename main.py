@@ -1,10 +1,6 @@
 __author__ = 'Cesar'
 
 import config
-import getIP
-config.logging.info("------------------WAIT-------------------")
-getIP.waitForIP()
-
 import threading
 import time
 

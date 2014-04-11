@@ -1,9 +1,9 @@
 __author__ = 'Cesar'
 
 import config
-import getIP
 import MySQLdb
 import mosquitto
+import time
 
 comando = ""
 
@@ -19,7 +19,7 @@ def on_connect_aeWC(mosq, obj, rc):
 def adquiereComando(estado):
     global comando
     # Construct DB object
-    db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
+    db = MySQLdb.connect(host='localhost', user='root', passwd='petrolog', db='eventosg4')
     # Traemos el Comando que toca dependiendo del estado en que se debe de encotrar el equipo
     cursor = db.cursor(MySQLdb.cursors.DictCursor)
     campodb = ""
@@ -41,13 +41,13 @@ def actuaEventos():
     config.logging.info("actuaEventos: actuaEventos Thread Running ...")
     # Connect to mqtt watchdog server
     mqttcWC.on_connect = on_connect_aeWC
-    mqttcWC.connect(getIP.localaddress, 1884)
+    mqttcWC.connect('localhost', 1884)
 
-    try:
-        while True:
+    while True:
+        try:
             with config.lock:
                 # Construct DB object
-                db = MySQLdb.connect(host='localhost', user='admin', passwd='petrolog', db='eventosg4')
+                db = MySQLdb.connect(host='localhost', user='root', passwd='petrolog', db='eventosg4')
                 cursor = db.cursor(MySQLdb.cursors.DictCursor)
                 cursor.execute('SELECT accion, estado FROM eventos '
                                'WHERE fecha_inicio < now() and fecha_fin > now() '
@@ -114,6 +114,13 @@ def actuaEventos():
                 mqttcWC.loop()
                 t += 1
 
-    except Exception as e:
-        config.logging.error('actuaEventos: Unexpected Error! - {0}'.format(e))
+        except Exception as e:
+            config.logging.error('actuaEventos: Unexpected Error! - {0}'.format(e))
+            time.sleep(1)
+            try:
+                config.lock.release()
+            except:
+                config.logging.info('actuaEventos: Lock already released')
+
+
 

@@ -1,7 +1,6 @@
 __author__ = 'Cesar'
 
 import config
-import getIP
 import time
 import comunicacionG4
 import os
@@ -20,23 +19,25 @@ def comparaTiempos():
     config.logging.info("verificaRelojSistema: comparaTiempos Thread Running ...")
     # Connect to mqtt watchdog server
     mqttcWC.on_connect = on_connect_ctWC
-    mqttcWC.connect(getIP.localaddress, 1884)
+    mqttcWC.connect('localhost', 1884)
 
     while True:
         try:
             while not comunicacionG4.tiempoEscDisponible():
-                tiempoG4 = time.mktime(comunicacionG4.getTiempoEsc())
-                config.logging.debug("verificaRelojSistema: tiempoEsc -> [{0}]"
-                                     .format(time.strftime('%H:%M:%S %d/%m/%Y', comunicacionG4.getTiempoEsc())))
-                tiempoSys = time.mktime(time.localtime())
-                config.logging.debug("verificaRelojSistema: tiempoSys -> [{0}]"
-                                     .format(time.strftime('%H:%M:%S %d/%m/%Y', time.localtime())))
                 # mqtt client loop for watchdog keep alive
                 config.logging.info("verificaRelojSistema: Watchdog Keep Alive - Esperando TiempoEsc")
                 # mqtt loop takes 1 sec to execute
                 mqttcWC.loop()
+                # mqtt returning immediately ????
+                time.sleep(1)
 
             config.logging.info("verificaRelojSistema: TiempoEsc Disponible!")
+            tiempoG4 = time.mktime(comunicacionG4.getTiempoEsc())
+            config.logging.debug("verificaRelojSistema: tiempoEsc -> [{0}]"
+                                 .format(time.strftime('%H:%M:%S %d/%m/%Y', comunicacionG4.getTiempoEsc())))
+            tiempoSys = time.mktime(time.localtime())
+            config.logging.debug("verificaRelojSistema: tiempoSys -> [{0}]"
+                                 .format(time.strftime('%H:%M:%S %d/%m/%Y', time.localtime())))
 
             r = os.system('ntpdate {0}'.format(config.ntpserver))
             if r == 0:
@@ -60,6 +61,9 @@ def comparaTiempos():
                 # mqtt loop takes 1 sec to execute
                 mqttcWC.loop()
                 t += 1
+                # mqtt returning immediately ????
+                time.sleep(1)
 
         except Exception as e:
-            config.logging.error('verificaRelojSistema: Error en Verificar Tiempos - {0}'.format(e))
+            config.logging.error('verificaRelojSistema: Unexpected Error! - {0}'.format(e))
+            time.sleep(1)
