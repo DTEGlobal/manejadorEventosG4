@@ -1,4 +1,24 @@
 
+Requisitos previos:
+    1. RaspberryPi Modelo A o B
+    2. Raspbian (version > January 2014)
+    3. WinImage
+    4. BitVise (SSH, SFTP Client)
+    5. Accesso a internet
+        - Modelo A:
+            -> Wifi - USB
+            -> Celular - Wifi - USB
+        - Modelo B ->
+            -> Ethernet
+            -> Wifi - USB
+            -> Celular - Wifi - USB
+    6. Update packages (apt-get update)
+    7. Python
+    8. Comunicacion serial con el dispositivo G4 a controlar
+        - Modulo serial para Python
+        - Remover el uso del puerto serie por el sistema operativo
+    9. Apache2 WebServer
+
 Setup:
     1. Crear cuenta Gmail del equipo (sofi.xxxxxxxx@gmail.com)
     2. Renombrar calendario principal (ver nomenclatura)
@@ -47,4 +67,6 @@ Monitor/Debug:
         - tail -f /home/logs/watchdog.log
     3. Eventos guardados en base de datos local (db name = eventosg4):
         SELECT * FROM eventos;
+    4. ps -C python
+    5. ps -aux
 
