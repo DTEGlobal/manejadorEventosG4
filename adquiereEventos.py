@@ -197,6 +197,8 @@ def adquiereEventos():
                 config.logging.debug("adquiereEventos: Watchdog Keep Alive")
                 # mqtt loop takes 1 sec to execute
                 mqttcWC.loop()
+                # mqtt returning immediately ????
+                time.sleep(1)
                 t += 1
 
         except Exception as e:

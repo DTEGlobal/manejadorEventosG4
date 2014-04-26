@@ -190,6 +190,8 @@ def serialDaemon():
                 config.logging.debug("comunicacionG4: Watchdog Keep Alive")
                 # mqtt loop takes 1 sec to execute
                 mqttcWC.loop()
+                # mqtt returning immediately ????
+                time.sleep(1)
                 t += 1
         except Exception as e:
             config.logging.error('comunicacionG4: Unexpected Error! - {0}'.format(e.args))
