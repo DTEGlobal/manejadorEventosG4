@@ -26,9 +26,7 @@ def comparaTiempos():
             while not comunicacionG4.tiempoEscDisponible():
                 # mqtt client loop for watchdog keep alive
                 config.logging.info("verificaRelojSistema: Watchdog Keep Alive - Esperando TiempoEsc")
-                # mqtt loop takes 1 sec to execute
-                mqttcWC.loop()
-                # mqtt returning immediately ????
+                mqttcWC.loop(0)
                 time.sleep(1)
             config.logging.info("verificaRelojSistema: TiempoEsc Disponible!")
 
@@ -68,11 +66,9 @@ def comparaTiempos():
             while t < config.actualizaReloj:
                 # mqtt client loop for watchdog keep alive
                 config.logging.debug("verificaRelojSistema: Watchdog Keep Alive")
-                # mqtt loop takes 1 sec to execute
-                mqttcWC.loop()
-                t += 1
-                # mqtt returning immediately ????
+                mqttcWC.loop(0)
                 time.sleep(1)
+                t += 1
 
         except Exception as e:
             config.logging.error('verificaRelojSistema: Unexpected Error! - {0}'.format(e))
