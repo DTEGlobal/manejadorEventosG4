@@ -17,11 +17,16 @@
   while(true){
 		$hora_Actual = mysql_query("SELECT respuestaConsola FROM dispositivo");
 		$row = mysql_fetch_row($hora_Actual);
+		//nos traemos el correo de la cuenta.
+		$resNombre = mysql_query("SELECT nombre FROM dispositivo");
+		$rowNombre = mysql_fetch_row($resNombre);
 		if($row[0] == "" ){
 		// no hacermos nada por que no hay respuesta
 		}else{
-		$hora = substr($row[0],3);
+			$hora = substr($row[0],3);
+			echo "<h2 align='center'><p><b> Equipo: $rowNombre[0]</p></b>";
 			echo "<h2 align='center'><p><b> Hora: $hora</p></b>";
+			
 			mysql_query("update dispositivo set respuestaConsola ='' where dirDispositivo = '01'");
 			break;
 		}
@@ -34,6 +39,7 @@
   while(true){
 	$resultEdo  = mysql_query("SELECT estado FROM dispositivo");
 	$resConsola = mysql_query("SELECT respuestaConsola FROM dispositivo");
+	
 	$row = mysql_fetch_row($resultEdo);
 	$rowConsola = mysql_fetch_row($resConsola);
 	if($rowConsola[0] == ""){
