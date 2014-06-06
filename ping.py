@@ -55,6 +55,7 @@ def pingDeamon():
                 raspberrypiKiller = 0
             else:
                 config.logging.critical("ping: wireless adapter is not detected")
+
                 raspberrypiKiller = 1
 
         t = 0

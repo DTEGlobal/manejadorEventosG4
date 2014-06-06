@@ -161,6 +161,9 @@ def serialDaemon():
     mqttcWC.on_connect = on_connect_cG4WC
     mqttcWC.connect('localhost', 1884)
 
+    # Reset killer Coil to ESC
+    SendCommand('01A61')
+
     while True:
         try:
             # Construct DB object
@@ -179,7 +182,8 @@ def serialDaemon():
                 updateTime = ''
             elif ping.raspberrypiKiller == 1:
                 config.logging.critical("comunicacionG4: wireless adapter not detected... powering off")
-                SendCommand('A60')
+                ping.raspberrypiKiller = 0
+                SendCommand('01A60')
             else:
                 SendCommand('01{0}\x0D'.format(actuaEventos.comando))
             SendCommand('01H\x0D')
