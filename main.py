@@ -8,6 +8,7 @@ import comunicacionG4
 import verificaRelojSistema
 import actuaEventos
 import adquiereEventos
+import ping
 
 config.logging.info("-------------Starting Threads-------------")
 lock = threading.Lock()
@@ -32,7 +33,11 @@ while time.mktime(time.localtime()) < 946706400:
     time.sleep(1)
 config.logging.info("  ----> Clock updated: {0} <----  "
                     .format((time.strftime("%H:%M:%S %d/%m/%Y", time.localtime()))))
-
+# Start Ping Daemon
+pingDaemon = threading.Thread(target=ping.pingDaemon)
+pingDaemon.daemon = True
+pingDaemon.start()
+time.sleep(.5)
 # Start Adquiere Eventos Daemon
 adquiereEventosDaemon = threading.Thread(target=adquiereEventos.adquiereEventos)
 adquiereEventosDaemon.daemon = True
@@ -44,6 +49,7 @@ actuaEventosDaemon.daemon = True
 actuaEventosDaemon.start()
 time.sleep(.5)
 config.logging.info("---------Starting Threads Done!-----------")
+
 
 while True:
     try:

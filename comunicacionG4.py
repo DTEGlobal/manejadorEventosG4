@@ -134,7 +134,11 @@ def SendCommand(cmd_cfg):
                 config.logging.debug("comunicacionG4: Reloj ESC -> [{}]".format(data_toPrint))
             elif data_toPrint[2] == "S":
                 config.logging.info("comunicacionG4: Nuevo Reloj ESC -> [{}]".format(data_toPrint))
-
+            elif data_toPrint[2] == "A":
+                if data_toPrint[4] == "0":
+                    config.logging.info("comunicacionG4: raspberrypi will shut down -> [{}]".format(data_toPrint))
+                if data_toPrint[4] == "1":
+                    config.logging.info("comunicacionG4: killer coil reseted -> [{}]".format(data_toPrint))
             else:
                 config.logging.debug("comunicacionG4: Rx Data- > [{}]".format(data_toPrint))
             Rx = False

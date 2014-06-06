@@ -37,8 +37,6 @@ def pingDeamon():
 
     while True:
 
-        #time.sleep(config.delayPing)
-
         config.logging.info("ping: Trying to ping default gateway")
         pingResult = os.popen("ping -c 1 192.168.1.254").read()
         pingMatch = re.search(', 1 received', pingResult)
