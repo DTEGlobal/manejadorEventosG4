@@ -9,6 +9,7 @@ import mosquitto
 import MySQLdb
 import bitState
 import re
+import ping
 
 port = serial.Serial("/dev/ttyAMA0", baudrate=19200, timeout=1)
 
@@ -176,6 +177,9 @@ def serialDaemon():
                 config.logging.info("comunicacionG4: Corrigiendo Reloj ESC")
                 SendCommand('01SH{0}\x0D'.format(updateTime))
                 updateTime = ''
+            elif ping.raspberrypiKiller == 1:
+                config.logging.critical("comunicacionG4: wireless adapter not detected... powering off")
+                SendCommand('A60')
             else:
                 SendCommand('01{0}\x0D'.format(actuaEventos.comando))
             SendCommand('01H\x0D')
