@@ -167,6 +167,7 @@ def serialDaemon():
 
     # Reset killer Coil to ESC
     SendCommand('01A61')
+    ping.raspberrypiKiller = 0
 
     while True:
         try:

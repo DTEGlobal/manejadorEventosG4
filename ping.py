@@ -18,22 +18,22 @@ import re
 import mosquitto
 
 # Create Mosquitto Client for Watchdog broker
-mqttcWP = mosquitto.Mosquitto("pingWC")
+mqttcWC = mosquitto.Mosquitto("pingWC")
 
 
 def on_connect_pingWC(mosq, obj, rc):
     config.logging.info("ping: ping Watchdog Client connected")
-    mqttcWP.subscribe("#", 0)
+    mqttcWC.subscribe("#", 0)
 
 
-def pingDeamon():
+def pingDaemon():
 
     raspberrypiKiller = 0
 
     config.logging.info("ping: Thread Running ...")
     # Connect to mqtt watchdog server
-    mqttcWP.on_connect = on_connect_pingWC
-    mqttcWP.connect('localhost', 1884)
+    mqttcWC.on_connect = on_connect_pingWC
+    mqttcWC.connect('localhost', 1884)
 
     while True:
 
@@ -59,7 +59,7 @@ def pingDeamon():
         t = 0
         while t < config.delayPing:
             # mqtt client loop for watchdog keep alive
-            config.logging.debug("comunicacionG4: Watchdog Keep Alive")
-            mqttcWP.loop(0)
+            config.logging.debug("ping: Watchdog Keep Alive")
+            mqttcWC.loop(0)
             time.sleep(1)
             t += 1

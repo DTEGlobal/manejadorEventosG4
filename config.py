@@ -28,4 +28,4 @@ ntpserver = 'pool.ntp.org'
 lock = threading.Lock()
 
 #wireless adapter detection
-delayPing = 1800
+delayPing = 10

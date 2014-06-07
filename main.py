@@ -13,6 +13,7 @@ import ping
 config.logging.info("-------------Starting Threads-------------")
 lock = threading.Lock()
 
+
 # Start Serial Coms Daemon
 serialDaemon = threading.Thread(target=comunicacionG4.serialDaemon)
 serialDaemon.daemon = True
@@ -33,11 +34,13 @@ while time.mktime(time.localtime()) < 946706400:
     time.sleep(1)
 config.logging.info("  ----> Clock updated: {0} <----  "
                     .format((time.strftime("%H:%M:%S %d/%m/%Y", time.localtime()))))
+
 # Start Ping Daemon
-pingDaemon = threading.Thread(target=ping.pingDaemon)
-pingDaemon.daemon = True
-pingDaemon.start()
+killerDaemon = threading.Thread(target=ping.pingDaemon)
+killerDaemon.daemon = True
+killerDaemon.start()
 time.sleep(.5)
+
 # Start Adquiere Eventos Daemon
 adquiereEventosDaemon = threading.Thread(target=adquiereEventos.adquiereEventos)
 adquiereEventosDaemon.daemon = True
