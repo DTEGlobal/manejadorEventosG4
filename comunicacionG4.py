@@ -186,10 +186,6 @@ def serialDaemon():
                 config.logging.info("comunicacionG4: Corrigiendo Reloj ESC")
                 SendCommand('01SH{0}\x0D'.format(updateTime))
                 updateTime = ''
-            elif ping.readyToShutdown == 1:
-                config.logging.critical("comunicacionG4: wireless adapter not detected... powering off")
-                ping.raspberrypiKiller = 0
-                SendCommand('01A60')
             else:
                 SendCommand('01{0}\x0D'.format(actuaEventos.comando))
             SendCommand('01H\x0D')
