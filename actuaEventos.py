@@ -113,6 +113,8 @@ def actuaEventos():
                 if ping.raspberrypiKiller == 1:
                     config.logging.info("actuaEventos: Ready for shutdown")
                     config.killerArray[3] = True
+                    while True:
+                        a=0
                 # mqtt client loop for watchdog keep alive
                 config.logging.debug("actuaEventos: Watchdog Keep Alive")
                 mqttcWC.loop(0)

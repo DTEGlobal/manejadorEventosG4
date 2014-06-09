@@ -199,6 +199,8 @@ def serialDaemon():
                 if ping.raspberrypiKiller == 1:
                     config.logging.info("comunicacionG4: Ready for Shutdown")
                     config.killerArray[0] = True
+                    while True:
+                        a=0
                 # mqtt client loop for watchdog keep alive
                 config.logging.debug("comunicacionG4: Watchdog Keep Alive")
                 mqttcWC.loop(0)
