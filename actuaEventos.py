@@ -4,6 +4,7 @@ import config
 import MySQLdb
 import mosquitto
 import time
+import ping
 
 comando = ""
 
@@ -107,7 +108,10 @@ def actuaEventos():
             adquiereComando(state)
 
             t = 0
-            while t < config.delayActuaEventos:
+            while t < config.delayActuaEventos or ping.raspberrypiKiller == 1:
+
+                if ping.raspberrypiKiller == 1:
+                    config.killerArray[3] = True
                 # mqtt client loop for watchdog keep alive
                 config.logging.debug("actuaEventos: Watchdog Keep Alive")
                 mqttcWC.loop(0)

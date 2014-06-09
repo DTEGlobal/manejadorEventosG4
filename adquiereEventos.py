@@ -31,6 +31,7 @@ import os
 import MySQLdb
 import time
 import mosquitto
+import ping
 
 from apiclient import discovery
 from oauth2client import file
@@ -192,7 +193,10 @@ def adquiereEventos():
                     config.logging.info('adquiereEventos: Lock already released')
 
             t = 0
-            while t < config.delayAdquiereEventos:
+            while t < config.delayAdquiereEventos or ping.raspberrypiKiller == 1:
+
+                if ping.raspberrypiKiller == 1:
+                    config.killerArray[2] = True
                 # mqtt client loop for watchdog keep alive
                 config.logging.debug("adquiereEventos: Watchdog Keep Alive")
                 mqttcWC.loop(0)

@@ -168,6 +168,7 @@ def serialDaemon():
     # Reset killer Coil to ESC
     SendCommand('01A61')
     ping.raspberrypiKiller = 0
+    ping.readyToShutdown = 0
 
     while True:
         try:
@@ -185,7 +186,7 @@ def serialDaemon():
                 config.logging.info("comunicacionG4: Corrigiendo Reloj ESC")
                 SendCommand('01SH{0}\x0D'.format(updateTime))
                 updateTime = ''
-            elif ping.raspberrypiKiller == 1:
+            elif ping.readyToShutdown == 1:
                 config.logging.critical("comunicacionG4: wireless adapter not detected... powering off")
                 ping.raspberrypiKiller = 0
                 SendCommand('01A60')
@@ -198,7 +199,11 @@ def serialDaemon():
             db.close()
 
             t = 0
-            while t < config.delaySerial:
+            while t < config.delaySerial or ping.raspberrypiKiller == 1:
+
+                if ping.raspberrypiKiller == 1:
+                    config.killerArray[0] = True
+
                 # mqtt client loop for watchdog keep alive
                 config.logging.debug("comunicacionG4: Watchdog Keep Alive")
                 mqttcWC.loop(0)

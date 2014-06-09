@@ -5,6 +5,7 @@ import time
 import comunicacionG4
 import os
 import mosquitto
+import ping
 
 # Create Mosquitto Client for Watchdog broker
 mqttcWC = mosquitto.Mosquitto("comparaTiemposWC")
@@ -63,7 +64,11 @@ def comparaTiempos():
                 config.logging.critical("verificaRelojSistema: NO TIME SOURCE AVAILABLE!!")
 
             t = 0
-            while t < config.actualizaReloj:
+            while t < config.actualizaReloj or ping.raspberrypiKiller == 1:
+
+                if ping.raspberrypiKiller == 1:
+                    config.killerArray[1] = True
+
                 # mqtt client loop for watchdog keep alive
                 config.logging.debug("verificaRelojSistema: Watchdog Keep Alive")
                 mqttcWC.loop(0)

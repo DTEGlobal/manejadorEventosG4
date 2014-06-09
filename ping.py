@@ -16,6 +16,7 @@ import time
 import os
 import re
 import mosquitto
+import comunicacionG4
 
 # Create Mosquitto Client for Watchdog broker
 mqttcWC = mosquitto.Mosquitto("pingWC")
@@ -53,8 +54,17 @@ def pingDaemon():
                 raspberrypiKiller = 0
             else:
                 config.logging.critical("ping: wireless adapter is not detected")
-
                 raspberrypiKiller = 1
+
+
+                while True:
+                    time.sleep(0.5)
+                    raspberrypiKiller = 1
+                    if config.killerArray == [True, True, True, True]:
+                        config.logging.critical("ping: ready to shutdown... powering off")
+                        time.sleep(1)
+                        comunicacionG4.SendCommand("01A60")
+                        os.popen("shutdown now")
 
         t = 0
         while t < config.delayPing:
