@@ -134,7 +134,7 @@ def SendCommand(cmd_cfg):
                 config.logging.debug("comunicacionG4: Reloj ESC -> [{}]".format(data_toPrint))
             elif data_toPrint[2] == "S":
                 config.logging.info("comunicacionG4: Nuevo Reloj ESC -> [{}]".format(data_toPrint))
-            elif data_toPrint[2] == "A":
+            elif data_toPrint[:-1] == "01A6":
                 if data_toPrint[4] == "0":
                     config.logging.info("comunicacionG4: raspberrypi will shut down -> [{}]".format(data_toPrint))
                 if data_toPrint[4] == "1":
@@ -198,6 +198,8 @@ def serialDaemon():
             while t < config.delaySerial or ping.raspberrypiKiller == 1:
 
                 if ping.raspberrypiKiller == 1:
+
+                    config.logging.debug("comunicacionG4: Ready for Shutdown")
                     config.killerArray[0] = True
 
                 # mqtt client loop for watchdog keep alive
