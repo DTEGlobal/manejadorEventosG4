@@ -136,7 +136,7 @@ def SendCommand(cmd_cfg):
                 config.logging.info("comunicacionG4: Nuevo Reloj ESC -> [{}]".format(data_toPrint))
             elif data_toPrint[:-1] == "01A6":
                 if data_toPrint[4] == "0":
-                    config.logging.info("comunicacionG4: raspberrypi will shut down -> [{}]".format(data_toPrint))
+                    config.logging.info("comunicacionG4: Command received -> [{}]".format(data_toPrint))
                 if data_toPrint[4] == "1":
                     config.logging.info("comunicacionG4: killer coil reseted -> [{}]".format(data_toPrint))
             else:
@@ -168,7 +168,6 @@ def serialDaemon():
     # Reset killer Coil to ESC
     SendCommand('01A61')
     ping.raspberrypiKiller = 0
-    ping.readyToShutdown = 0
 
     while True:
         try:
@@ -198,10 +197,8 @@ def serialDaemon():
             while t < config.delaySerial or ping.raspberrypiKiller == 1:
 
                 if ping.raspberrypiKiller == 1:
-
-                    config.logging.debug("comunicacionG4: Ready for Shutdown")
+                    config.logging.info("comunicacionG4: Ready for Shutdown")
                     config.killerArray[0] = True
-
                 # mqtt client loop for watchdog keep alive
                 config.logging.debug("comunicacionG4: Watchdog Keep Alive")
                 mqttcWC.loop(0)

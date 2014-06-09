@@ -196,7 +196,7 @@ def adquiereEventos():
             while t < config.delayAdquiereEventos or ping.raspberrypiKiller == 1:
 
                 if ping.raspberrypiKiller == 1:
-                    config.logging.debug("adquiereEventos: Ready for Shutdown")
+                    config.logging.info("adquiereEventos: Ready for Shutdown")
                     config.killerArray[2] = True
                 # mqtt client loop for watchdog keep alive
                 config.logging.debug("adquiereEventos: Watchdog Keep Alive")

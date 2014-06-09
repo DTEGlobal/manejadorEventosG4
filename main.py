@@ -13,6 +13,7 @@ import ping
 config.logging.info("-------------Starting Threads-------------")
 lock = threading.Lock()
 
+time.sleep(30)
 
 # Start Serial Coms Daemon
 serialDaemon = threading.Thread(target=comunicacionG4.serialDaemon)

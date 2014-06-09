@@ -58,14 +58,14 @@ def pingDaemon():
                 config.logging.critical("ping: wireless adapter is not detected")
                 raspberrypiKiller = 1
 
-                while True:
+                while config.killerArray != [True, True, True, True]:
                     time.sleep(0.5)
                     raspberrypiKiller = 1
-                    if config.killerArray == [True, True, True, True]:
-                        config.logging.critical("ping: ready to shutdown... powering off")
-                        time.sleep(1)
-                        comunicacionG4.SendCommand("01A60")
-                        os.popen("shutdown now")
+
+                config.logging.critical("ping: ready to shutdown... powering off")
+                time.sleep(1)
+                comunicacionG4.SendCommand("01A60")
+                os.popen("shutdown now")
 
         t = 0
         while t < config.delayPing:

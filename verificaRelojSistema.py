@@ -67,7 +67,7 @@ def comparaTiempos():
             while t < config.actualizaReloj or ping.raspberrypiKiller == 1:
 
                 if ping.raspberrypiKiller == 1:
-                    config.logging.debug("verificaRelojSistema: Ready for Shutdown")
+                    config.logging.info("verificaRelojSistema: Ready for Shutdown")
                     config.killerArray[1] = True
 
                 # mqtt client loop for watchdog keep alive
