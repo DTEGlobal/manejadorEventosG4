@@ -68,7 +68,7 @@ def comparaTiempos():
 
                 if ping.raspberrypiKiller == 1:
                     config.logging.info("verificaRelojSistema: Ready for Shutdown")
-                    config.killerArray[1] = True
+                    ping.killerArray[1] = True
                     while True:
                         a=0
 

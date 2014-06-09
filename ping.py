@@ -28,6 +28,9 @@ def on_connect_pingWC(mosq, obj, rc):
 
 raspberrypiKiller = 0
 
+#Killer Array
+killerArray = [False, False, False, False]
+
 def pingDaemon():
     global raspberrypiKiller
 
@@ -58,7 +61,7 @@ def pingDaemon():
                 config.logging.critical("ping: wireless adapter is not detected")
                 raspberrypiKiller = 1
 
-                while config.killerArray != [True, True, True, True]:
+                while killerArray != [True, True, True, True]:
                     time.sleep(0.5)
                     raspberrypiKiller = 1
 

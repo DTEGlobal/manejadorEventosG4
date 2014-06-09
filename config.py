@@ -30,5 +30,4 @@ lock = threading.Lock()
 #wireless adapter detection
 delayPing = 20
 
-#Killer Array
-killerArray = [False, False, False, False]
+
