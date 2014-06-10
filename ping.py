@@ -43,6 +43,14 @@ def pingDaemon():
 
     while True:
 
+        t = 0
+        while t < config.delayPing:
+            # mqtt client loop for watchdog keep alive
+            config.logging.debug("ping: Watchdog Keep Alive")
+            mqttcWC.loop(0)
+            time.sleep(1)
+            t += 1
+            
         config.logging.info("ping: Trying to ping default gateway")
         pingResult = os.popen("ping -c 1 192.168.1.254").read()
         pingMatch = re.search(', 1 received', pingResult)
@@ -70,10 +78,4 @@ def pingDaemon():
                 comunicacionG4.SendCommand("01A60")
                 os.popen("shutdown now")
 
-        t = 0
-        while t < config.delayPing:
-            # mqtt client loop for watchdog keep alive
-            config.logging.debug("ping: Watchdog Keep Alive")
-            mqttcWC.loop(0)
-            time.sleep(1)
-            t += 1
+        
