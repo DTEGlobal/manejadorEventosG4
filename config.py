@@ -19,7 +19,7 @@ daysToStoreLocally = 60
 secondsToStoreLocally = daysToStoreLocally * 86400
 
 # Time interval between clock verification
-actualizaReloj = 600
+actualizaReloj = 86400
 
 # NTP Server
 ntpserver = 'pool.ntp.org'
