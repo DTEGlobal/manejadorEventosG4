@@ -41,6 +41,8 @@ def pingDaemon():
     mqttcWC.on_connect = on_connect_pingWC
     mqttcWC.connect('localhost', 1884)
 
+    c = 0
+
     while True:
 
         t = 0
@@ -65,6 +67,17 @@ def pingDaemon():
             if lsusbMatch != None:
                 config.logging.info("ping: wireless adapter is detected")
                 raspberrypiKiller = 0
+                config.logging.critical("ping: {} Times without network connection".format(c))
+                c += 1
+                if c >= (config.rebootCount/config.delayPing):
+                    raspberrypiKiller = 1
+                    while killerArray != [True, True, True, True]:
+                        time.sleep(0.5)
+                        raspberrypiKiller = 1
+                    config.logging.critical("ping: ready to reboot... ")
+                    time.sleep(1)
+                    os.popen("reboot")
+
             else:
                 config.logging.critical("ping: wireless adapter is not detected")
                 raspberrypiKiller = 1

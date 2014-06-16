@@ -30,4 +30,5 @@ lock = threading.Lock()
 #wireless adapter detection
 delayPing = 300
 
-
+#seconds without network connection before reboot
+rebootCount = 1500
