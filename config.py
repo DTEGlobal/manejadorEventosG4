@@ -10,7 +10,7 @@ logging.basicConfig(format='%(asctime)s - [%(levelname)s]: %(message)s',
                     level=logging.INFO)
 
 # Delays
-delayAdquiereEventos = 600
+delayAdquiereEventos = 1800
 delayActuaEventos = 30
 delaySerial = 1
 
@@ -19,7 +19,7 @@ daysToStoreLocally = 60
 secondsToStoreLocally = daysToStoreLocally * 86400
 
 # Time interval between clock verification
-actualizaReloj = 86400
+actualizaReloj = 3600
 
 # NTP Server
 ntpserver = 'pool.ntp.org'
