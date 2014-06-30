@@ -189,7 +189,8 @@ def adquiereEventos():
                     config.logging.info('adquiereEventos: Lock already released')
 
             except httplib2.ServerNotFoundError:
-                config.logging.warning("No internet access retry in {0} sec".format(config.delayAdquiereEventos))
+                #config.logging.warning("No internet access retry in {0} sec".format(config.delayAdquiereEventos))
+                config.logging.warning("No internet access retry in 60 sec")
                 connection_succesfull = False
 
                 try:

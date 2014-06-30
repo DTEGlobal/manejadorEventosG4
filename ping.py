@@ -59,6 +59,7 @@ def pingDaemon():
         if pingMatch != None:
             config.logging.info("ping: ping to default gateway successful")
             raspberrypiKiller = 0
+            c = 0
         else:
             config.logging.critical("ping: No Network Connection")
             config.logging.info("ping: verifying usb port connection to wireless adapter")
@@ -67,9 +68,10 @@ def pingDaemon():
             if lsusbMatch != None:
                 config.logging.info("ping: wireless adapter is detected")
                 raspberrypiKiller = 0
-                config.logging.critical("ping: {} Times without network connection".format(c))
                 c += 1
-                if c >= (config.rebootCount/config.delayPing):
+                config.logging.critical("ping: {} Times without network connection".format(c))
+
+                if c >= config.rebootCount:
                     raspberrypiKiller = 1
                     while killerArray != [True, True, True, True]:
                         time.sleep(0.5)
