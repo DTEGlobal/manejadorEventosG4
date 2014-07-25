@@ -78,6 +78,7 @@ def adquiereEventos():
     # Connect to mqtt watchdog server
     mqttcWC.on_connect = on_connect_aeWC
     mqttcWC.connect('localhost', 1884)
+    connection_successful = True
 
     while True:
         try:
@@ -102,9 +103,6 @@ def adquiereEventos():
                 # with our good Credentials.
                 http = httplib2.Http()
                 http = credentials.authorize(http)
-
-                #Connection succesfull Yes or No?
-                connection_succesfull = True
 
                 # Construct the service object for the interacting with the Calendar API.
                 service = discovery.build('calendar', 'v3', http=http)
@@ -180,6 +178,7 @@ def adquiereEventos():
                     db.commit()
                     cursor.close()
                     db.close()
+                    connection_successful = True
             except client.AccessTokenRefreshError:
                 config.logging.critical("The credentials have been revoked or expired, please re-run"
                                         "the application to re-authorize")
@@ -191,37 +190,35 @@ def adquiereEventos():
             except httplib2.ServerNotFoundError:
                 #config.logging.warning("No internet access retry in {0} sec".format(config.delayAdquiereEventos))
                 config.logging.warning("No internet access retry in 60 sec")
-                connection_succesfull = False
+                connection_successful = False
 
                 try:
                     config.lock.release()
                 except:
                     config.logging.info('adquiereEventos: Lock already released')
 
-            t = 0
-            #If can't connect to google try in 60 sec. if can connect try in the configured delay
-            if connection_succesfull is True:
-                Delaytime = config.delayAdquiereEventos
-            elif connection_succesfull is False:
-                Delaytime = 60
-
-            while t < Delaytime or ping.raspberrypiKiller == 1:
-
-                if ping.raspberrypiKiller == 1:
-                    config.logging.info("adquiereEventos: Ready for Shutdown")
-                    ping.killerArray[2] = True
-                    while True:
-                        a=0
-                # mqtt client loop for watchdog keep alive
-                config.logging.debug("adquiereEventos: Watchdog Keep Alive")
-                mqttcWC.loop(0)
-                time.sleep(1)
-                t += 1
-
         except Exception as e:
-            config.logging.error('adquiereEventos: Unexpected Error! - {0}'.format(e.args))
-            time.sleep(1)
+            config.logging.error('adquiereEventos: Unexpected Error! - {0}'.format(e.message))
             try:
                 config.lock.release()
             except:
                 config.logging.info('adquiereEventos: Lock already released')
+
+        t = 0
+        # If can't connect to google retry in delayAdquiereEventosRetry.
+        if connection_successful is False:
+            Delaytime = config.delayAdquiereEventosRetry
+        else:
+            Delaytime = config.delayAdquiereEventos
+
+        while t < Delaytime or ping.raspberrypiKiller == 1:
+            if ping.raspberrypiKiller == 1:
+                config.logging.info("adquiereEventos: Ready for Shutdown")
+                ping.killerArray[2] = True
+                while True:
+                    a = 0
+            # mqtt client loop for watchdog keep alive
+            config.logging.debug("adquiereEventos: Watchdog Keep Alive")
+            mqttcWC.loop(0)
+            time.sleep(1)
+            t += 1

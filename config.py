@@ -12,6 +12,7 @@ logging.basicConfig(format='%(asctime)s - [%(levelname)s]: %(message)s',
 # Delays
 delayAdquiereEventos = 1800
 delayActuaEventos = 30
+delayAdquiereEventosRetry = 60
 delaySerial = 1
 
 # Amount of events to store locally (days)
