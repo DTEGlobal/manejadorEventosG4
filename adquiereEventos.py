@@ -89,6 +89,7 @@ def adquiereEventos():
                 # flow. The Storage object will ensure that if successful the good
                 # credentials will get written back to the file.
                 credentials = None
+                storage = None
                 samplePath = os.path.join(os.path.dirname(__file__), 'sample.dat')
                 config.logging.info("  ----> Wait for Credentials <----  ")
                 while credentials is None:
@@ -98,9 +99,12 @@ def adquiereEventos():
                 config.logging.info("  ----> Credentials Acquired! <----  ")
                 if credentials.invalid:
                     # credentials = tools.run_flow(FLOW, storage, flags)
-                    config.logging.warning("adequiereEventos: Invalid credentials detected!")
+                    config.logging.warning("adequiereEventos: Invalid credentials detected in sample.dat =(")
                     credentials.invalid = False
-                    config.logging.warning("adequiereEventos: Invalid = False")
+                    storage.put(credentials)
+                    config.logging.warning("adequiereEventos: Stored [Invalid = False] in sample.dat!!")
+                else:
+                    config.logging.info("adequiereEventos: Valid credentials detected in sample.dat =)")
 
                 # Create an httplib2.Http object to handle our HTTP requests and authorize it
                 # with our good Credentials.
