@@ -97,7 +97,10 @@ def adquiereEventos():
                     time.sleep(1)
                 config.logging.info("  ----> Credentials Acquired! <----  ")
                 if credentials.invalid:
-                    credentials = tools.run_flow(FLOW, storage, flags)
+                    # credentials = tools.run_flow(FLOW, storage, flags)
+                    config.logging.warning("adequiereEventos: Invalid credentials detected!")
+                    credentials.invalid = False
+                    config.logging.warning("adequiereEventos: Invalid = False")
 
                 # Create an httplib2.Http object to handle our HTTP requests and authorize it
                 # with our good Credentials.
