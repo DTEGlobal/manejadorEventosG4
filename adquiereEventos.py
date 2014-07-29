@@ -91,101 +91,111 @@ def adquiereEventos():
                 credentials = None
                 storage = None
                 samplePath = os.path.join(os.path.dirname(__file__), 'sample.dat')
-                config.logging.info("  ----> Wait for Credentials <----  ")
+                config.logging.info("  ----> Wait for Credentials file: sample.dat <----  ")
+                get_sample_dat_counter = 0
                 while credentials is None:
                     storage = file.Storage(samplePath)
                     credentials = storage.get()
                     time.sleep(1)
-                config.logging.info("  ----> Credentials Acquired! <----  ")
-                if credentials.invalid:
-                    # credentials = tools.run_flow(FLOW, storage, flags)
-                    config.logging.warning("adequiereEventos: Invalid credentials detected in sample.dat =(")
-                    credentials.invalid = False
-                    storage.put(credentials)
-                    config.logging.warning("adequiereEventos: Stored [Invalid = False] in sample.dat!!")
-                else:
-                    config.logging.info("adequiereEventos: Valid credentials detected in sample.dat =)")
+                    if get_sample_dat_counter > 3:
+                        config.logging.error(" adquiereEventos: {0} Try to get sample.dat .. Fail! =S"
+                                             .format(get_sample_dat_counter))
+                        break
+                    else:
+                        get_sample_dat_counter += 1
+                        config.logging.warning(" adquiereEventos: {0} Try to get sample.dat  "
+                                               .format(get_sample_dat_counter))
+                if credentials is not None:
+                    config.logging.info("  ----> Credentials file Acquired! <----  ")
+                    if credentials.invalid:
+                        # credentials = tools.run_flow(FLOW, storage, flags)
+                        config.logging.warning("adquiereEventos: Invalid credentials detected in sample.dat =(")
+                        credentials.invalid = False
+                        storage.put(credentials)
+                        config.logging.warning("adquiereEventos: Stored [Invalid = False] in sample.dat!!")
+                    else:
+                        config.logging.info("adquiereEventos: Valid credentials detected in sample.dat =)")
 
-                # Create an httplib2.Http object to handle our HTTP requests and authorize it
-                # with our good Credentials.
-                http = httplib2.Http()
-                http = credentials.authorize(http)
+                    # Create an httplib2.Http object to handle our HTTP requests and authorize it
+                    # with our good Credentials.
+                    http = httplib2.Http()
+                    http = credentials.authorize(http)
 
-                # Construct the service object for the interacting with the Calendar API.
-                service = discovery.build('calendar', 'v3', http=http)
+                    # Construct the service object for the interacting with the Calendar API.
+                    service = discovery.build('calendar', 'v3', http=http)
 
-                with config.lock:
-                    # Construct DB object
-                    db = MySQLdb.connect(host='localhost', user='root', passwd='petrolog', db='eventosg4')
-                    cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                    with config.lock:
+                        # Construct DB object
+                        db = MySQLdb.connect(host='localhost', user='root', passwd='petrolog', db='eventosg4')
+                        cursor = db.cursor(MySQLdb.cursors.DictCursor)
 
-                    # Primary calendar id includes the device name (ei. sofi.compresor1@gmail.com)
-                    deviceName = service.calendarList().get(calendarId='primary').execute()['id']
-                    calendar_list = service.calendarList().list().execute()
+                        # Primary calendar id includes the device name (ei. sofi.compresor1@gmail.com)
+                        deviceName = service.calendarList().get(calendarId='primary').execute()['id']
+                        calendar_list = service.calendarList().list().execute()
 
-                    # Get current date and configuration to calculate dates to pull from calendar
-                    current_date = time.mktime(time.localtime())
-                    timeMin = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.localtime(current_date))
-                    timeMax = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.localtime(current_date
-                                                                                 + config.secondsToStoreLocally))
-                    timeCurrent = time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(current_date))
-                    config.logging.debug('Dates to get: {0} - {1}'.format(timeMin, timeMax))
+                        # Get current date and configuration to calculate dates to pull from calendar
+                        current_date = time.mktime(time.localtime())
+                        timeMin = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.localtime(current_date))
+                        timeMax = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.localtime(current_date
+                                                                                     + config.secondsToStoreLocally))
+                        timeCurrent = time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(current_date))
+                        config.logging.debug('Dates to get: {0} - {1}'.format(timeMin, timeMax))
 
-                    # Clear event table
-                    cursor.execute('DELETE from eventos WHERE idEventos > 0')
-                    for calendar in calendar_list['items']:
-                        accion, estado = calendar['summary'].split(':')
-                        config.logging.info("Device name = [{0}], "
-                                            "Accion = [{1}], "
-                                            "Estado = [{2}]".format(deviceName, accion, estado))
-                        cursor.execute('SELECT * FROM dispositivo')
-                        currentName = cursor.fetchone()
-                        if currentName['nombre'] != deviceName:
-                            config.logging.debug('si necesitamos cambio de nombre!')
-                            cursor.execute('UPDATE dispositivo SET nombre = \'{0}\''.format(deviceName))
+                        # Clear event table
+                        cursor.execute('DELETE from eventos WHERE idEventos > 0')
+                        for calendar in calendar_list['items']:
+                            accion, estado = calendar['summary'].split(':')
+                            config.logging.info("Device name = [{0}], "
+                                                "Accion = [{1}], "
+                                                "Estado = [{2}]".format(deviceName, accion, estado))
+                            cursor.execute('SELECT * FROM dispositivo')
+                            currentName = cursor.fetchone()
+                            if currentName['nombre'] != deviceName:
+                                config.logging.debug('si necesitamos cambio de nombre!')
+                                cursor.execute('UPDATE dispositivo SET nombre = \'{0}\''.format(deviceName))
 
-                        current_month_events = service.events().list(calendarId=calendar['id'],
-                                                                     singleEvents=True,
-                                                                     timeMax=timeMax,
-                                                                     timeMin=timeMin).execute()
-                        for current_event in current_month_events['items']:
-                            try:
-                                s = current_event['start']['dateTime']
-                                date, t = s.split('T')
-                                t, q = t.split('-')
-                                start = '{0} {1}'.format(date, t)
+                            current_month_events = service.events().list(calendarId=calendar['id'],
+                                                                         singleEvents=True,
+                                                                         timeMax=timeMax,
+                                                                         timeMin=timeMin).execute()
+                            for current_event in current_month_events['items']:
+                                try:
+                                    s = current_event['start']['dateTime']
+                                    date, t = s.split('T')
+                                    t, q = t.split('-')
+                                    start = '{0} {1}'.format(date, t)
 
-                                e = current_event['end']['dateTime']
-                                date, t = e.split('T')
-                                t, q = t.split('-')
-                                end = '{0} {1}'.format(date, t)
-                                config.logging.info("Start = [{0}], "
-                                                    "End = [{1}]".format(start, end))
-                                cursor.execute('INSERT into eventos '
-                                               'VALUES (NULL, \'{0}\', \'{1}\', \'{2}\', \'{3}\', \'01\', \'{4}\')'.
-                                               format(start,
-                                                      end,
-                                                      accion,
-                                                      estado,
-                                                      timeCurrent))
-                            except KeyError:
-                                start = current_event['start']['date']+' 00:00:00'
-                                end = current_event['end']['date']+' 23:59:59'
-                                config.logging.debug("(All Day Event)"
-                                                     "Start = [{1}]"
-                                                     "End = [{2}]"
-                                                     .format(current_event['summary'], start, end))
-                                cursor.execute('INSERT into eventos '
-                                               'VALUES (NULL, \'{0}\', \'{1}\', \'{2}\', \'{3}\', \'01\', \'{4}\')'.
-                                               format(start,
-                                                      end,
-                                                      accion,
-                                                      estado,
-                                                      timeCurrent))
-                    db.commit()
-                    cursor.close()
-                    db.close()
-                    connection_successful = True
+                                    e = current_event['end']['dateTime']
+                                    date, t = e.split('T')
+                                    t, q = t.split('-')
+                                    end = '{0} {1}'.format(date, t)
+                                    config.logging.info("Start = [{0}], "
+                                                        "End = [{1}]".format(start, end))
+                                    cursor.execute('INSERT into eventos '
+                                                   'VALUES (NULL, \'{0}\', \'{1}\', \'{2}\', \'{3}\', \'01\', \'{4}\')'.
+                                                   format(start,
+                                                          end,
+                                                          accion,
+                                                          estado,
+                                                          timeCurrent))
+                                except KeyError:
+                                    start = current_event['start']['date']+' 00:00:00'
+                                    end = current_event['end']['date']+' 23:59:59'
+                                    config.logging.debug("(All Day Event)"
+                                                         "Start = [{1}]"
+                                                         "End = [{2}]"
+                                                         .format(current_event['summary'], start, end))
+                                    cursor.execute('INSERT into eventos '
+                                                   'VALUES (NULL, \'{0}\', \'{1}\', \'{2}\', \'{3}\', \'01\', \'{4}\')'.
+                                                   format(start,
+                                                          end,
+                                                          accion,
+                                                          estado,
+                                                          timeCurrent))
+                        db.commit()
+                        cursor.close()
+                        db.close()
+                        connection_successful = True
             except client.AccessTokenRefreshError:
                 config.logging.critical("The credentials have been revoked or expired, please re-run"
                                         "the application to re-authorize")
